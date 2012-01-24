@@ -13,7 +13,7 @@ public class PasswordEncrypter
   
   final static SecureRandom random = new SecureRandom();
   
-  public PasswordEntity encrypt(char[] passwd)
+  public char[] encrypt(char[] passwd)
   {
     try {
       MessageDigest messageDigest = getMessageDigest();
@@ -36,22 +36,20 @@ public class PasswordEncrypter
       
       StringBuffer saltR = new StringBuffer(Base64.encodeBytes(salt));
       String pwdComplete = saltR.reverse().toString() + Base64.encodeBytes(pwd);
-      return new PasswordEntity(saltR.toString(), pwdComplete);
-      
-      //return new PasswordEntity(Base64.encodeBytes(salt), Base64.encodeBytes(pwd));
+      return pwdComplete.toCharArray();
     } catch (Exception e) {
       e.printStackTrace();
     }
     return null;
   }
   
-  public String decrypt(String salt, String passwd)
+  public char[] decrypt(char[] salt, char[] passwd)
   {
     try {
       MessageDigest messageDigest = getMessageDigest();
       
-      byte[] decodedSalt = Base64.decode(salt);
-      byte[] decodedPwd = passwd.getBytes("UTF-8");
+      byte[] decodedSalt = Base64.decode(new String(salt));
+      byte[] decodedPwd = new String(passwd).getBytes("UTF-8");
       
       messageDigest.update(fixSalt);
       messageDigest.update(decodedSalt);
@@ -66,7 +64,7 @@ public class PasswordEncrypter
         }
       }
       
-      return new String(Base64.encodeBytes(pwd));
+      return new String(Base64.encodeBytes(pwd)).toCharArray();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -78,7 +76,7 @@ public class PasswordEncrypter
     if (encPasswd.length() > 12) {
       StringBuffer salt = new StringBuffer(encPasswd.substring(0, 12)).reverse();
       String origPwd = encPasswd.substring(12);
-      String encNewPwd = decrypt(salt.toString(), pwd);
+      String encNewPwd = new String(decrypt(salt.toString().toCharArray(), pwd.toCharArray()));
       return origPwd.equals(encNewPwd);
     }
     return false;

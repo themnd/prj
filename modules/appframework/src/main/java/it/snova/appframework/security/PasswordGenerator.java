@@ -13,14 +13,14 @@ public class PasswordGenerator
     this.policy = policy;
   }
   
-  public PasswordEntity generatePassword()
+  public char[] generatePassword()
   {
     return encrypter.encrypt(gen.generatePassword(policy.getMinLength(), policy.getMaxLength()));
   }
   
-  public boolean verifyPassword(PasswordEntity p, String pwd)
+  public boolean verifyPassword(String encPwd, String pwd)
   {
-    return encrypter.verifyPassword(pwd, p.getPwd());
+    return encrypter.verifyPassword(encPwd, pwd);
   }
   
   static public PasswordGenerator factory()

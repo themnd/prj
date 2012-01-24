@@ -25,9 +25,6 @@ public class UsersTable extends Metadata
   @Column
   private String pwd;
   
-  @Column
-  private String salt;
-
   public String getId()
   {
     return id;
@@ -78,13 +75,4 @@ public class UsersTable extends Metadata
     this.pwd = pwd;
   }
 
-  public String getSalt()
-  {
-    return salt;
-  }
-
-  public void setSalt(String salt)
-  {
-    this.salt = salt;
-  }
 }

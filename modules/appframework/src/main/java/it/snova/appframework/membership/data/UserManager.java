@@ -1,6 +1,5 @@
 package it.snova.appframework.membership.data;
 
-import it.snova.appframework.security.PasswordEntity;
 import it.snova.appframework.security.PasswordGenerator;
 import it.snova.apptables.data.UsersTable;
 import it.snova.apptables.framework.Context;
@@ -50,9 +49,7 @@ public class UserManager
   
   public UserBean resetPassword(UserBean u)
   {
-    PasswordEntity p = pgen.generatePassword();
-    u.setPwd(p.getPwd());
-    u.setSalt(p.getSalt());
+    u.setPwd(new String(pgen.generatePassword()));
     return u;
   }
   
@@ -65,9 +62,7 @@ public class UserManager
     String userId = Long.toHexString(sb.getNextId());
     UserBean u = new UserBean();
     u.setId(userId);
-    PasswordEntity p = pgen.generatePassword();
-    u.setPwd(p.getPwd());
-    u.setSalt(p.getSalt());
+    u.setPwd(new String(pgen.generatePassword()));
     return u;
   }
   
@@ -94,8 +89,7 @@ public class UserManager
   private UserBean validateUser(UserBean u, String pwd)
   {
     if (u != null) {
-      PasswordEntity p = new PasswordEntity(u.getSalt(), pwd);
-      if (pgen.verifyPassword(p, u.getPwd())) {
+      if (pgen.verifyPassword(u.getPwd(), pwd)) {
         return u;
       }
     }
@@ -109,7 +103,6 @@ public class UserManager
     user.setName(u.getName());
     user.setEmail(u.getEmail());
     user.setPwd(u.getPwd());
-    user.setSalt(u.getSalt());
     return user;
   }
   
@@ -120,7 +113,6 @@ public class UserManager
     user.setName(u.getName());
     user.setEmail(u.getEmail());
     user.setPwd(u.getPwd());
-    user.setSalt(u.getSalt());
     return user;
   }
 

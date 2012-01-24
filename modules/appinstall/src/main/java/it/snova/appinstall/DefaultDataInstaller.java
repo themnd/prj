@@ -1,7 +1,6 @@
 package it.snova.appinstall;
 
 import it.snova.appframework.security.PasswordEncrypter;
-import it.snova.appframework.security.PasswordEntity;
 import it.snova.apptables.data.Metadata;
 import it.snova.apptables.data.UsersTable;
 import it.snova.apptables.framework.Context;
@@ -51,14 +50,13 @@ public class DefaultDataInstaller
   static public DefaultDataInstaller install(HClient client) throws Exception
   {
     PasswordEncrypter e = new PasswordEncrypter();
-    PasswordEntity p = e.encrypt(new String("admin").toCharArray());
+    char[] pwd = e.encrypt(new String("admin").toCharArray());
 
     UsersTable admin = new UsersTable();
     admin.setId(DefaultValues.ADMINID);
     admin.setDomainId("");
     admin.setName("admin");
-    admin.setPwd(p.getPwd());
-    admin.setSalt(p.getSalt());
+    admin.setPwd(new String(pwd));
     admin.setEmail("admin@admin.it");
     
     return new DefaultDataInstaller(client)

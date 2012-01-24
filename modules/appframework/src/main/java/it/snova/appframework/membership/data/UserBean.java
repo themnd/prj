@@ -7,7 +7,6 @@ public class UserBean
   private String name;
   private String email;
   private String pwd;
-  private String salt;
   
   public String getId()
   {
@@ -47,16 +46,6 @@ public class UserBean
   public void setPwd(String pwd)
   {
     this.pwd = pwd;
-  }
-
-  public String getSalt()
-  {
-    return salt;
-  }
-
-  public void setSalt(String salt)
-  {
-    this.salt = salt;
   }
 
 }

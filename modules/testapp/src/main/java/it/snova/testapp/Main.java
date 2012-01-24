@@ -22,16 +22,16 @@ public class Main
       HClient client = new HClient().init();
       userManager = new UserManager(client);
 
-//      AppInstaller.install(client);
+      AppInstaller.install(client);
       
-//      for (int i = 0; i < 100; i++) {
-//        
-//        UserBean u = userManager.createNewUser();
-//        u.setName("u" + i);
-//        u.setEmail("u@u");
-//        
-//        userManager.createUser(u);
-//      }
+      for (int i = 0; i < 100; i++) {
+        
+        UserBean u = userManager.createNewUser();
+        u.setName("u" + i);
+        u.setEmail("u@u");
+        
+        userManager.createUser(u);
+      }
       
       boolean b = testLogin(client, "admin", "admin");
       
