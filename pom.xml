@@ -23,6 +23,7 @@
     <module>modules/appframework</module>
     <module>modules/appinstall</module>
     <module>modules/testapp</module>
+    <module>modules/webgui</module>
   </modules>
   <name>Project Handler</name>
 </project>
