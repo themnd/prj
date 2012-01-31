@@ -58,7 +58,7 @@ public class ScanBuilder<T>
         ClassParser<T> parser = new ClassParser<T>((Class<T>) object.getClass());
         
         for (ColumnDescriptor d: tb.schema.columns) {
-          byte[] v = r.getValue(Bytes.toBytes(d.family), Bytes.toBytes(d.qualifier));
+          byte[] v = r.getValue(Bytes.toBytes(d.family.getName()), Bytes.toBytes(d.qualifier));
           parser.setObjectValue(d.f, object, new String(v));
         }
 

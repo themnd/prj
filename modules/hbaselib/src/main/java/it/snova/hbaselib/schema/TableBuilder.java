@@ -5,8 +5,6 @@ import it.snova.hbaselib.schema.annotation.RowId;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.security.InvalidParameterException;
 
 import org.apache.hadoop.hbase.client.Get;
@@ -34,6 +32,8 @@ public class TableBuilder<T>
   {
     byte[] rowkey = null;
 
+    ClassParser<T> parser = new ClassParser<T>((Class<T>) schema.tableClass);
+    
     for (Field f: schema.tableClass.getDeclaredFields()) {
       
       RowId r = f.getAnnotation(RowId.class);
@@ -41,7 +41,7 @@ public class TableBuilder<T>
         continue;
       }
       
-      String s = (String) getObjectValue(f, table);
+      String s = (String) parser.getObjectValue(f, table);
       if (rowkey == null) {
         rowkey = Bytes.toBytes(s);
       } else {
@@ -59,14 +59,16 @@ public class TableBuilder<T>
     
     HTable table = initTable();
     
+    ClassParser<T> parser = new ClassParser<T>((Class<T>) schema.tableClass);
+
     byte[] rowId = getRowId(object);
     Put put = new Put(rowId);
     for (ColumnDescriptor d: schema.columns) {
       Field f = d.f;
-      Object o = getObjectValue(f, object);
+      Object o = parser.getObjectValue(f, object);
       if (o != null) {
         String s = o.toString();
-        put.add(Bytes.toBytes(d.family), Bytes.toBytes(d.qualifier), Bytes.toBytes(s));        
+        put.add(Bytes.toBytes(d.family.getName()), Bytes.toBytes(d.qualifier), Bytes.toBytes(s));        
       }
     }
     
@@ -91,9 +93,11 @@ public class TableBuilder<T>
       return null;
     }
     
+    ClassParser<T> parser = new ClassParser<T>((Class<T>) object.getClass());
+
     for (ColumnDescriptor d: schema.columns) {
-      byte[] v = r.getValue(Bytes.toBytes(d.family), Bytes.toBytes(d.qualifier));
-      setObjectValue(d.f, object, new String(v));
+      byte[] v = r.getValue(Bytes.toBytes(d.family.getName()), Bytes.toBytes(d.qualifier));
+      parser.setObjectValue(d.f, object, new String(v));
     }
     
     return object;
@@ -109,64 +113,5 @@ public class TableBuilder<T>
   {
     return schema.client.getZContext().getSequence(schema.tableClass);
   }
-  
-  private Object getObjectValue(Field f, Object o) throws Exception
-  {
-    if (Modifier.isPublic(f.getModifiers())) {
-      return (String) f.get(o);
-    } else {
-      String getName = f.getName();
-      getName = "get" + getName.substring(0, 1).toUpperCase() + getName.substring(1);
-      Method m = schema.tableClass.getMethod(getName);
-      if (m != null) {
-        return m.invoke(o, null);
-      }
-      return null;
-    }
-  }
-  
-  private void setObjectValue(Field f, Object o, Object v) throws Exception
-  {
-    if (Modifier.isPublic(f.getModifiers())) {
-      f.set(o, v);
-    } else {
-      String setName = f.getName();
-      setName = "set" + setName.substring(0, 1).toUpperCase() + setName.substring(1);
-      {
-        try {
-          Method m = schema.tableClass.getMethod(setName, String.class);
-          m.invoke(o, v);
-          return;
-        } catch (java.lang.NoSuchMethodException e) {
-        }
-      }
-      {
-        try {
-          long vl = Long.parseLong((String) v);
-          try {
-            Method m = schema.tableClass.getMethod(setName, Long.TYPE);
-            m.invoke(o, vl);
-            return;
-          } catch (java.lang.NoSuchMethodException e) {
-          }
-        } catch (NumberFormatException e1) {
-        }
-      }
-      {
-        try {
-          int vi = Integer.parseInt((String) v);
-          try {
-            Method m = schema.tableClass.getMethod(setName, Integer.TYPE);
-            m.invoke(o, vi);
-            return;
-          } catch (java.lang.NoSuchMethodException e) {
-          }
-        } catch (NumberFormatException e1) {
-        }
-      }
-      
-      throw new InvalidParameterException("cannot find a suitable method for " + setName);
-    }
-  }
-
+    
 }

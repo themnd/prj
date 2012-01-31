@@ -1,16 +1,18 @@
 package it.snova.apptables.data;
 
 import it.snova.hbaselib.schema.annotation.Column;
+import it.snova.hbaselib.schema.annotation.Family;
 
+@Family(family = "meta")
 public abstract class Metadata
 {
-  @Column(family="meta", column="created")
+  @Column(column="created")
   private long creation;
   
-  @Column(family="meta", column="modified")
+  @Column(column="modified")
   private long modified;
 
-  @Column(family="meta", column="modifier")
+  @Column(column="modifier")
   private String modifierId;
 
   public long getCreation()

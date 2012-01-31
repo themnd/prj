@@ -57,5 +57,21 @@ public class ClassParser<T extends Object>
       throw new InvalidParameterException("cannot find a suitable method for " + setName);
     }
   }
+  
+  public Object getObjectValue(Field f, Object o) throws Exception
+  {
+    if (Modifier.isPublic(f.getModifiers())) {
+      return (String) f.get(o);
+    } else {
+      String getName = f.getName();
+      getName = "get" + getName.substring(0, 1).toUpperCase() + getName.substring(1);
+      Method m = c.getMethod(getName);
+      if (m != null) {
+        return m.invoke(o, null);
+      }
+      return null;
+    }
+  }
+
 
 }

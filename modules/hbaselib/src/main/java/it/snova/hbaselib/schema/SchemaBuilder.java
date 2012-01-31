@@ -2,7 +2,9 @@ package it.snova.hbaselib.schema;
 
 import it.snova.hbaselib.framework.HClient;
 import it.snova.hbaselib.schema.annotation.Column;
+import it.snova.hbaselib.schema.annotation.Family;
 import it.snova.hbaselib.schema.annotation.Table;
+import it.snova.hbaselib.schema.descriptors.FamilyDescriptor;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -10,6 +12,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -24,6 +27,7 @@ public class SchemaBuilder<T>
   String description;
   
   List<ColumnDescriptor> columns;
+  List<FamilyDescriptor> families;
 
   public SchemaBuilder(HClient client, Class<T> tableClass)
   {
@@ -66,29 +70,17 @@ public class SchemaBuilder<T>
   {
     HTableDescriptor descriptor = new HTableDescriptor(name);
 
-    for (ColumnDescriptor d: columns) {
-      
-      Column c = d.c;
-      
-      String compressionType = c.compressionType();
-      if (compressionType.length() == 0) {
-        compressionType = HColumnDescriptor.DEFAULT_COMPRESSION;
-      }
-      String bloomFilter = c.bloomFilter();
-      if (bloomFilter.length() == 0) {
-        bloomFilter = HColumnDescriptor.DEFAULT_BLOOMFILTER;
-      }
-      
+    for (FamilyDescriptor f: families) {      
       HColumnDescriptor col = new HColumnDescriptor(
-          Bytes.toBytes(d.family),
-          c.maxVersions(),
-          compressionType,
-          c.inMemory(),
-          c.blockCacheEnabled(),
-          c.blockSize(),
-          c.timeToLive(),
-          bloomFilter,
-          c.scope());
+          Bytes.toBytes(f.getName()),
+          f.getMaxVersions(),
+          f.getCompressionType(),
+          f.isInMemory(),
+          f.isBlockCacheEnabled(),
+          f.getBlockSize(),
+          f.getTimeToLive(),
+          f.getBloomFilter(),
+          f.getScope());
       descriptor.addFamily(col);
     }
     return descriptor;
@@ -97,10 +89,20 @@ public class SchemaBuilder<T>
   private void initColumns()
   {
     columns = new ArrayList<ColumnDescriptor>();
+    families = new ArrayList<FamilyDescriptor>();
     
     @SuppressWarnings("rawtypes")
     Class clazz = tableClass;
     while (clazz != null) {
+
+      FamilyDescriptor family = null;
+      
+      Family familyAnnotation = (Family) clazz.getAnnotation(Family.class);
+      if (familyAnnotation != null) {
+        family = new FamilyDescriptor(familyAnnotation);
+        families.add(family);
+      }
+
       for (Field f: clazz.getDeclaredFields()) {
         
         Column c = f.getAnnotation(Column.class);
@@ -108,14 +110,26 @@ public class SchemaBuilder<T>
           continue;
         }
         
-        String family = c.family();
-        if (family.length() == 0) {
-          family = f.getName();
+        FamilyDescriptor columnFamily = null;
+        
+        String fieldFamily = c.family();
+        if (fieldFamily.length() > 0) {
+          columnFamily = new FamilyDescriptor(c);
+          families.add(columnFamily);
+        } else {
+          columnFamily = family;
+        }
+        
+        if (columnFamily == null) {
+          throw new InvalidParameterException("Family has not been defined for table " + clazz.getName() + " or field " + f.getName());
         }
         
         String qualifier = c.column();
+        if (qualifier.length() == 0) {
+          qualifier = f.getName();
+        }
         
-        columns.add(new ColumnDescriptor(f, c, family, qualifier));
+        columns.add(new ColumnDescriptor(f, columnFamily, qualifier));
       }
       clazz = clazz.getSuperclass();
     }
@@ -129,14 +143,20 @@ public class SchemaBuilder<T>
   protected class ColumnDescriptor
   {
     Field f;
-    Column c;
-    String family;
+    FamilyDescriptor family;
     String qualifier;
     
-    private ColumnDescriptor(Field f, Column c, String family, String qualifier)
+    private ColumnDescriptor(Field f, FamilyDescriptor family, String qualifier)
     {
+      if (family == null) {
+        throw new InvalidParameterException("Family has not been defined");
+      }
+      
+      if (StringUtils.isEmpty(qualifier)) {
+        throw new InvalidParameterException("Qualifier has not been defined");
+      }
+
       this.f = f;
-      this.c = c;
       this.family = family;
       this.qualifier = qualifier;
     }

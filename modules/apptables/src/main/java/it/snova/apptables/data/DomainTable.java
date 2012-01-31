@@ -1,11 +1,13 @@
 package it.snova.apptables.data;
 
 import it.snova.hbaselib.schema.annotation.Column;
+import it.snova.hbaselib.schema.annotation.Family;
 import it.snova.hbaselib.schema.annotation.RowId;
 import it.snova.hbaselib.schema.annotation.Sequence;
 import it.snova.hbaselib.schema.annotation.Table;
 
 @Table(name = "domain")
+@Family(family = "content")
 public class DomainTable extends Metadata
 {
   @Column

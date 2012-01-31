@@ -8,12 +8,11 @@ import java.lang.annotation.Target;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface Column {
+@Target(ElementType.TYPE)
+public @interface Family {
   
-  public String family() default "";
-  public String column() default "";
-  
+  public String family();
+
   public int maxVersions() default HColumnDescriptor.DEFAULT_VERSIONS;
   public String compressionType() default "";
   public boolean inMemory() default HColumnDescriptor.DEFAULT_IN_MEMORY;
