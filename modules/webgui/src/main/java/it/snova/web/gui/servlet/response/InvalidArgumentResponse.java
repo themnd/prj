@@ -5,7 +5,7 @@ public class InvalidArgumentResponse extends AppResponse
 {
   private InvalidArgumentResponse()
   {
-    status = 400;
+    super(400);
   }
   
   static public InvalidArgumentResponse build()

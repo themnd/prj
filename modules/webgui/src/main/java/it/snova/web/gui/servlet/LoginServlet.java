@@ -17,6 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,11 +52,21 @@ public class LoginServlet extends HttpServlet
           .required()
           .value();
       
-      loginUser(userName, userPwd);
+      logger.info("logged in " + userName);
       
-      OKResponse.build()
+      UserBean user = loginUser(userName, userPwd);
+      if (user != null) {
+
+        setSessionUser(request, user);
+        
+        OKResponse.build()
         .redirect(authOK)
         .process(response);
+      } else {
+        OKResponse.build()
+        .redirect(authKO)
+        .process(response);
+      }
     } catch (AppServletException e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
       AppResponse r = e.response();
@@ -66,17 +77,32 @@ public class LoginServlet extends HttpServlet
     }
   }
   
-  private boolean loginUser(String name, String pwd) throws AppServletException
+  private UserBean loginUser(String name, String pwd) throws AppServletException
   {
     try {
       HClient client = new HClient().init();
       UserManager userManager = new UserManager(client);
 
       UserBean user = userManager.loginUser(name, pwd);
-      return user != null;
+      return user;
     } catch (Exception e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
       throw new AppServletException(ClientErrorResponse.build());
     }
+  }
+  
+  static public UserBean getSessionUser(HttpServletRequest request)
+  {
+    HttpSession session = ((HttpServletRequest)request).getSession(false);
+    if (session != null) {
+      return (UserBean)session.getAttribute(LoginServlet.class.getName() + ".user");
+    }
+    return null;
+  }
+  
+  private void setSessionUser(HttpServletRequest request, UserBean user)
+  {
+    HttpSession session = ((HttpServletRequest)request).getSession(true);
+    session.setAttribute(LoginServlet.class.getName() + ".user", user);
   }
 }

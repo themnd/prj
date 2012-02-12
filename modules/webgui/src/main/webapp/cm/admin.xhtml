@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="http://java.sun.com/jsf/core"
+  xmlns:h="http://java.sun.com/jsf/html"
+  xmlns:p="http://primefaces.org/ui">
+<h:head>
+
+</h:head>
+
+<h:body>
+
+Hello
+<h:form id="form"> 
+<p:dashboard model="#{adminDashboard.model}">
+  <p:panel id="Users" header="Users">
+
+		<p:inputText id="userListText" value="#{userList.filter}">
+		 <p:ajax update="userList" event="keyup"/>
+		</p:inputText>
+		<p:dataTable id="userList" var="user" value="#{userList.users}">
+	    <p:column>
+	      <h:outputText value="#{user.name}" />
+	    </p:column>
+	  </p:dataTable>
+  </p:panel>
+  <p:panel id="Groups" header="Groups">
+    <h:outputText value="Groups Content" />
+  </p:panel>
+</p:dashboard>
+
+</h:form>
+<p:growl id="messages" />
+
+</h:body>
+</html>

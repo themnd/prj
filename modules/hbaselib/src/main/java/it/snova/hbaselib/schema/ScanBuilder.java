@@ -59,7 +59,9 @@ public class ScanBuilder<T>
         
         for (ColumnDescriptor d: tb.schema.columns) {
           byte[] v = r.getValue(Bytes.toBytes(d.family.getName()), Bytes.toBytes(d.qualifier));
-          parser.setObjectValue(d.f, object, new String(v));
+          if (v != null) {
+            parser.setObjectValue(d.f, object, new String(v));            
+          }
         }
 
         if (processor.processResult(object)) {

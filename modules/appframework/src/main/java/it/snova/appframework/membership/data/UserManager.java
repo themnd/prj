@@ -42,6 +42,23 @@ public class UserManager
     return null;
   }
   
+  public void iterate(final UserIterable iterable) throws Exception
+  {
+    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
+    ScanProcessorSingleResult<UsersTable> scan =
+      (ScanProcessorSingleResult<UsersTable>) tb.scan().process(
+        new ScanProcessorSingleResult<UsersTable>(UsersTable.class) {
+          @Override
+          public boolean processSingleResult(UsersTable result)
+          {
+            return iterable.processUser(createFromData(result));
+          }
+        });
+    if (scan.result != null) {
+      createFromData(scan.result);
+    }    
+  }
+  
   public UserBean loginUser(final String name, final String pwd) throws Exception
   {
     return validateUser(getUser(name), pwd);
@@ -114,6 +131,11 @@ public class UserManager
     user.setEmail(u.getEmail());
     user.setPwd(u.getPwd());
     return user;
+  }
+  
+  public interface UserIterable
+  {
+    public boolean processUser(UserBean u);
   }
 
 }

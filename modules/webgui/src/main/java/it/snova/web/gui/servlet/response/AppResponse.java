@@ -9,9 +9,9 @@ public abstract class AppResponse
   int status;
   String redirectUrl;
 
-  protected AppResponse()
+  protected AppResponse(int status)
   {
-    status = 200;
+    this.status = status;
     redirectUrl = null;
   }
 
