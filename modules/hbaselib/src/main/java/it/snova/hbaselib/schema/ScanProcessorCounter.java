@@ -2,21 +2,26 @@ package it.snova.hbaselib.schema;
 
 import java.io.IOException;
 
-public abstract class ScanProcessorSingleResult<T> extends ScanProcessor<T>
+public abstract class ScanProcessorCounter<T> extends ScanProcessor<T>
 {
-  public T result;
+  int count;
   
-  public ScanProcessorSingleResult(Class<T> c)
+  public ScanProcessorCounter(Class<T> c)
   {
     super(c);
+    count = 0;
+  }
+  
+  public int getCount()
+  {
+    return count;
   }
   
   public void processResult(T result) throws IOException
   {
     boolean r = processSingleResult(result);
     if (r) {
-      this.result = result;
-      setStop(true);
+      count += 1;
     }
   }
   

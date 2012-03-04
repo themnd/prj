@@ -4,9 +4,12 @@ import it.snova.appframework.security.PasswordGenerator;
 import it.snova.apptables.data.UsersTable;
 import it.snova.apptables.framework.Context;
 import it.snova.hbaselib.framework.HClient;
+import it.snova.hbaselib.schema.ScanProcessor;
+import it.snova.hbaselib.schema.ScanProcessorCounter;
 import it.snova.hbaselib.schema.ScanProcessorSingleResult;
 import it.snova.hbaselib.schema.SequenceBuilder;
 import it.snova.hbaselib.schema.TableBuilder;
+import it.snova.hbaselib.schema.Timetrack;
 
 import java.io.IOException;
 
@@ -91,6 +94,30 @@ public class UserManager
   public void createUser(Context c, UserBean u) throws Exception
   {
     createUser(c, createFromUser(u));
+  }
+  
+  public int getUserCount() throws Exception
+  {
+    return getUserCount(null);
+  }
+  
+  public int getUserCount(final UserIterable iterable) throws Exception
+  {
+    Timetrack track  = new Timetrack("getUserCount");
+    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
+    ScanProcessorCounter<UsersTable> scan =
+      (ScanProcessorCounter<UsersTable>) tb.scan().process(
+        new ScanProcessorCounter<UsersTable>(UsersTable.class) {
+
+          @Override
+          public boolean processSingleResult(UsersTable result) throws IOException
+          {
+            return true;
+          }
+
+        });
+    track.end();
+    return scan.getCount();
   }
 
   private void createUser(Context c, UsersTable u) throws Exception

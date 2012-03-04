@@ -18,6 +18,7 @@ public class UserSessionBean
   @PostConstruct
   public void init()
   {
+    System.out.println("UserSessionBean init");
     try {
       client = new HClient().init();
     } catch (Exception e) {

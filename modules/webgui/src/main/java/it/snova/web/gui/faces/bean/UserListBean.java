@@ -2,6 +2,7 @@ package it.snova.web.gui.faces.bean;
 
 import it.snova.appframework.membership.data.UserManager;
 import it.snova.appframework.membership.data.UserManager.UserIterable;
+import it.snova.web.gui.faces.bean.model.UserListModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,6 +13,8 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 
+import org.primefaces.model.LazyDataModel;
+
 @ManagedBean(name = "userList")
 @ViewScoped
 public class UserListBean implements Serializable
@@ -21,9 +24,10 @@ public class UserListBean implements Serializable
    */
   private static final long serialVersionUID = 1L;
   
-  @ManagedProperty(value="#{" +UserSessionBean.BEAN_NAME + "")
+  @ManagedProperty(value="#{" +UserSessionBean.BEAN_NAME + "}")
   private UserSessionBean userSession;
   
+  private UserListModel model;
   private List<UserBean> users;
   private String filter;
 
@@ -34,25 +38,26 @@ public class UserListBean implements Serializable
     
     filter = "";
     
+    model = new UserListModel();
     users = new ArrayList<UserBean>();
     
-    try {
-      UserManager userMgr = userSession.getUserManager();
-      userMgr.iterate(new UserIterable() {
-
-        @Override
-        public boolean processUser(it.snova.appframework.membership.data.UserBean u)
-        {
-          users.add(new UserBean().setName(u.getName()));
-          return false;
-        }
-        
-      });
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    users.add(new UserBean().setName("marco"));
-    users.add(new UserBean().setName("pippo"));
+//    try {
+//      UserManager userMgr = userSession.getUserManager();
+//      userMgr.iterate(new UserIterable() {
+//
+//        @Override
+//        public boolean processUser(it.snova.appframework.membership.data.UserBean u)
+//        {
+//          users.add(new UserBean().setName(u.getName()));
+//          return false;
+//        }
+//        
+//      });
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//    users.add(new UserBean().setName("marco"));
+//    users.add(new UserBean().setName("pippo"));
   }
   
   public List<UserBean> getUsers()
@@ -68,6 +73,11 @@ public class UserListBean implements Serializable
       }
     }
     return ret;
+  }
+  
+  public LazyDataModel<UserBean> getModel()
+  {
+    return model;
   }
   
   public String getFilter()
@@ -88,6 +98,8 @@ public class UserListBean implements Serializable
   public void setUserSession(UserSessionBean userSession)
   {
     this.userSession = userSession;
+    System.out.println("set session");
+
   }
   
 }

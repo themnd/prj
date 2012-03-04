@@ -46,8 +46,9 @@ public class ScanBuilder<T>
   public ScanProcessor<T> process(ScanProcessor<T> processor) throws Exception
   {
     HTable table = tb.initTable();
+    ResultScanner scanner = null;
     try {
-      ResultScanner scanner = table.getScanner(scan);
+      scanner = table.getScanner(scan);
       while (true) {
         Result r = scanner.next();
         if (r == null) {
@@ -63,15 +64,20 @@ public class ScanBuilder<T>
             parser.setObjectValue(d.f, object, new String(v));            
           }
         }
-
-        if (processor.processResult(object)) {
+        
+        processor.processResult(object);
+        
+        if (processor.isStop()) {
           break;
         }
       }
     } finally {
+      if (scanner != null) {
+        scanner.close();
+      }
       table.close();
     }
     return processor;
   }
-  
+
 }

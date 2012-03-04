@@ -10,7 +10,6 @@
 
 <h:body>
 
-Hello
 <h:form id="form"> 
 <p:dashboard model="#{adminDashboard.model}">
   <p:panel id="Users" header="Users">
@@ -18,8 +17,11 @@ Hello
 		<p:inputText id="userListText" value="#{userList.filter}">
 		 <p:ajax update="userList" event="keyup"/>
 		</p:inputText>
-		<p:dataTable id="userList" var="user" value="#{userList.users}">
+		<p:dataTable id="userList" var="user" value="#{userList.model}" paginator="true" rows="10">
 	    <p:column>
+				<f:facet name="header">
+					<h:outputText value="Name" />
+				</f:facet>
 	      <h:outputText value="#{user.name}" />
 	    </p:column>
 	  </p:dataTable>
