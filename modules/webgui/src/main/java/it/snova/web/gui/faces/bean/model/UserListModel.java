@@ -39,7 +39,7 @@ public class UserListModel extends LazyDataModel<UserBean>
   }
 
   @Override
-  public List<UserBean> load(int first, int pageSize, String sortField, SortOrder sortOrder, Map<String,String> filters)
+  public List<UserBean> load(int first, int pageSize, String sortField, SortOrder sortOrder, final Map<String,String> filters)
   {
     System.out.println("first: " + first);
     System.out.println("pageSize: " + pageSize);
@@ -52,34 +52,35 @@ public class UserListModel extends LazyDataModel<UserBean>
     try {
       UserManager userMgr = getUserSession().getUserManager();
       
-      if (selectedDomain.equals(Defaults.ALL_DOMAINS)) {
-        userMgr.iterate(new UserIterable() {
-  
-          @Override
-          public boolean processUser(User u)
-          {
-            if (loginFilter.isEmpty() || u.getName().toLowerCase().contains(loginFilter.toLowerCase())) {
-              users.add(create(u));
-            }
-            return false;
+      UserIterable iter = new UserIterable() {
+        
+        @Override
+        public boolean processUser(User u)
+        {
+          boolean add = true;
+          if (filters.containsKey("login")) {
+            add = u.getLogin() != null && u.getLogin().toLowerCase().contains(filters.get("login").toLowerCase());
           }
-          
-        });
+          if (add && filters.containsKey("name")) {
+            add = u.getName() != null && u.getName().toLowerCase().contains(filters.get("name").toLowerCase());
+          }
+          if (add && filters.containsKey("email")) {
+            add = u.getEmail() != null && u.getEmail().toLowerCase().contains(filters.get("email").toLowerCase());
+          }
+          if (add) {
+            users.add(create(u));
+          }
+          return false;
+        }
+      };
+      if (filters.containsKey("domain")) {
+        String domain = filters.get("domain");
+        Domain d = userMgr.getDomain(domain);
+        userMgr.iterateForDomain(d, iter);
       } else {
-        Domain d = userMgr.getDomain(selectedDomain);
-        userMgr.iterateForDomain(d, new UserIterable() {
-          
-          @Override
-          public boolean processUser(User u)
-          {
-            if (loginFilter.isEmpty() || u.getName().toLowerCase().contains(loginFilter.toLowerCase())) {
-              users.add(create(u));
-            }
-            return false;
-          }
-          
-        });
+        userMgr.iterate(iter);        
       }
+
       logger.info("End Users size: " + users.size());
       setRowCount(users.size());
     } catch (Exception e) {

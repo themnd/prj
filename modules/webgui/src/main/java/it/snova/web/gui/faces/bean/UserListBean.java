@@ -1,7 +1,9 @@
 package it.snova.web.gui.faces.bean;
 
+import it.snova.appframework.membership.data.UserManager;
 import it.snova.dbschema.defaults.Defaults;
 import it.snova.dbschema.table.Domain;
+import it.snova.dbschema.table.User;
 import it.snova.web.gui.faces.bean.model.UserListModel;
 
 import java.io.Serializable;
@@ -60,13 +62,17 @@ public class UserListBean implements Serializable
   
   public void deleteUser()
   {
+    logger.info("removing user " + selectedUser.getLogin());
     
+    UserManager userMgr = getUserSession().getUserManager();
+    User u = userMgr.getUser(selectedUser.getLogin());
+    userMgr.deleteUser(u);
   }
   
   public List<SelectItem> getAvailableDomains()
   {
     List<SelectItem> domains = new ArrayList<SelectItem>();
-    domains.add(new SelectItem(Defaults.ALL_DOMAINS));
+    domains.add(new SelectItem("", Defaults.ALL_DOMAINS));
     
     List<Domain> dbDomains = getUserSession().getUserManager().getDomains();
     for (Domain d: dbDomains) {

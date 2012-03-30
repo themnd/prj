@@ -27,8 +27,16 @@
 		</p:inputText>
     <p:contextMenu for="userList">
 	    <p:menuitem value="Modify" update="userList" icon="ui-icon-search" oncomplete="newUserDlg.show()"/>
-	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" actionListener="#{userList.deleteUser}"/>
+	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" onclick="confirmation.show()"/>
     </p:contextMenu>
+	  <p:confirmDialog id="confirmDeleteDialog" message="Are you sure you want to remove the selected user?"
+	        header="Delete user" severity="alert" widgetVar="confirmation">
+	        
+	    <p:commandButton id="confirm" value="Yes" update=":form:userList, :messages" oncomplete="confirmation.hide()"
+	          actionListener="#{userList.deleteUser}" />
+	    <p:commandButton id="decline" value="Not" onclick="confirmation.hide()" type="button" /> 
+	        
+	  </p:confirmDialog>
 		<p:dataTable
 		  id="userList"
 		  var="user"
@@ -38,28 +46,33 @@
 		  rowKey="#{user.login}"
 		  paginator="true"
 		  rows="10">
-      <p:column>
-        <f:facet name="header">
-          <h:outputText value="Domain" />
-        </f:facet>
+      <p:column
+        headerText="Domain"
+        filterBy="#{user.domain}"
+        filterOptions="#{userList.availableDomains}"
+        filterMatchMode="exact"
+      >
         <h:outputText value="#{user.domain}" />
       </p:column>
-	    <p:column>
-				<f:facet name="header">
-					<h:outputText value="Login" />
-				</f:facet>
+	    <p:column
+        headerText="Login"
+        filterBy="#{user.login}"
+        filterMatchMode="contains"
+	    >
 	      <h:outputText value="#{user.login}" />
 	    </p:column>
-      <p:column>
-        <f:facet name="header">
-          <h:outputText value="Name" />
-        </f:facet>
+      <p:column
+        headerText="Name"
+        filterBy="#{user.name}"
+        filterMatchMode="contains"
+      >
         <h:outputText value="#{user.name}" />
       </p:column>
-      <p:column>
-        <f:facet name="header">
-          <h:outputText value="Email" />
-        </f:facet>
+      <p:column
+        headerText="Email"
+        filterBy="#{user.email}"
+        filterMatchMode="contains"
+      >
         <h:outputText value="#{user.email}" />
       </p:column>
 	  </p:dataTable>

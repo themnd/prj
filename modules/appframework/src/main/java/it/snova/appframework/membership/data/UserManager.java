@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -39,7 +40,7 @@ public class UserManager
     return this;
   }
   
-  public User getUser(final String login) throws Exception
+  public User getUser(final String login)
   {
     EntityManager em = context.createEntityManager();
     try {
@@ -99,13 +100,41 @@ public class UserManager
   public void createUser(User u)
   {
     EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
     
-    PasswordEncrypter e = new PasswordEncrypter();
-    char[] pwd = e.encrypt(new String(u.getPwd()).toCharArray());
-    u.setPwd(new String(pwd));
-    
-    em.persist(u);
-    em.close();
+      PasswordEncrypter e = new PasswordEncrypter();
+      char[] pwd = e.encrypt(new String(u.getPwd()).toCharArray());
+      u.setPwd(new String(pwd));
+      
+      em.persist(u);
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
+  }
+  
+  public void deleteUser(User u)
+  {
+    EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+
+      User user = em.find(User.class, u.getId());
+      em.remove(user);
+      
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
   }
   
   public int getUserCount() throws Exception
@@ -160,8 +189,19 @@ public class UserManager
   public void createDomain(Domain d)
   {
     EntityManager em = context.createEntityManager();
-    em.persist(d);
-    em.close();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+      
+      em.persist(d);
+      
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
   }
   
   private User validateUser(User u, String pwd)
