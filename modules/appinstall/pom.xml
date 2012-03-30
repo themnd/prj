@@ -11,18 +11,13 @@
   <dependencies>
     <dependency>
       <groupId>it.snova</groupId>
-      <artifactId>apptables</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>it.snova</groupId>
-      <artifactId>hbaselib</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>it.snova</groupId>
       <artifactId>appframework</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>it.snova</groupId>
+      <artifactId>dbschema</artifactId>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 </project>

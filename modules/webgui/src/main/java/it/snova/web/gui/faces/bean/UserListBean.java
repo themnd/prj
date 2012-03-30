@@ -1,17 +1,19 @@
 package it.snova.web.gui.faces.bean;
 
-import it.snova.appframework.membership.data.UserManager;
-import it.snova.appframework.membership.data.UserManager.UserIterable;
+import it.snova.dbschema.defaults.Defaults;
+import it.snova.dbschema.table.Domain;
 import it.snova.web.gui.faces.bean.model.UserListModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
+import javax.faces.model.SelectItem;
 
 import org.primefaces.model.LazyDataModel;
 
@@ -19,60 +21,26 @@ import org.primefaces.model.LazyDataModel;
 @ViewScoped
 public class UserListBean implements Serializable
 {
+  private static final Logger logger = Logger.getLogger(UserListBean.class.getName());
+
   /**
    * 
    */
   private static final long serialVersionUID = 1L;
   
-  @ManagedProperty(value="#{" +UserSessionBean.BEAN_NAME + "}")
+  @ManagedProperty(value="#{" + UserSessionBean.BEAN_NAME + "}")
   private UserSessionBean userSession;
   
   private UserListModel model;
-  private List<UserBean> users;
-  private String filter;
+  private UserBean selectedUser;
 
   @PostConstruct
   public void init()
   {
-    System.out.println("UserListBean init");
-    
-    filter = "";
-    
     model = new UserListModel();
-    users = new ArrayList<UserBean>();
+    model.setUserSession(userSession);
     
-//    try {
-//      UserManager userMgr = userSession.getUserManager();
-//      userMgr.iterate(new UserIterable() {
-//
-//        @Override
-//        public boolean processUser(it.snova.appframework.membership.data.UserBean u)
-//        {
-//          users.add(new UserBean().setName(u.getName()));
-//          return false;
-//        }
-//        
-//      });
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//    users.add(new UserBean().setName("marco"));
-//    users.add(new UserBean().setName("pippo"));
-  }
-  
-  public List<UserBean> getUsers()
-  {
-    String f = getFilter().trim().toLowerCase();
-    if (f.isEmpty()) {
-      return users;
-    }
-    List<UserBean> ret = new ArrayList<UserBean>();
-    for (UserBean u: users) {
-      if (u.getName().trim().toLowerCase().contains(f)) {
-        ret.add(u);
-      }
-    }
-    return ret;
+    selectedUser = null;
   }
   
   public LazyDataModel<UserBean> getModel()
@@ -80,16 +48,44 @@ public class UserListBean implements Serializable
     return model;
   }
   
-  public String getFilter()
+  public UserBean getSelectedUser()
   {
-    return filter;
+    return selectedUser;
   }
   
-  public void setFilter(String filter)
+  public void setSelectedUser(UserBean selectedUser)
   {
-    this.filter = filter;
+    this.selectedUser = selectedUser;
   }
+  
+  public void deleteUser()
+  {
+    
+  }
+  
+  public List<SelectItem> getAvailableDomains()
+  {
+    List<SelectItem> domains = new ArrayList<SelectItem>();
+    domains.add(new SelectItem(Defaults.ALL_DOMAINS));
+    
+    List<Domain> dbDomains = getUserSession().getUserManager().getDomains();
+    for (Domain d: dbDomains) {
+      domains.add(new SelectItem(d.getName()));      
+    }
+    return domains;
+  }
+  
+  public List<SelectItem> getExistingDomains()
+  {
+    List<SelectItem> domains = new ArrayList<SelectItem>();
 
+    List<Domain> dbDomains = getUserSession().getUserManager().getDomains();
+    for (Domain d: dbDomains) {
+      domains.add(new SelectItem(d.getName()));      
+    }
+    return domains;
+  }
+  
   public UserSessionBean getUserSession()
   {
     return userSession;
@@ -97,9 +93,8 @@ public class UserListBean implements Serializable
 
   public void setUserSession(UserSessionBean userSession)
   {
+    logger.info("set session");
     this.userSession = userSession;
-    System.out.println("set session");
-
   }
   
 }

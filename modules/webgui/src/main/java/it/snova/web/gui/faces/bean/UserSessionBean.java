@@ -1,7 +1,11 @@
 package it.snova.web.gui.faces.bean;
 
+import it.snova.appframework.context.Context;
 import it.snova.appframework.membership.data.UserManager;
-import it.snova.hbaselib.framework.HClient;
+import it.snova.web.gui.config.utils.Configuration;
+
+import java.io.Serializable;
+import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
@@ -9,26 +13,27 @@ import javax.faces.bean.SessionScoped;
 
 @ManagedBean(name = UserSessionBean.BEAN_NAME)
 @SessionScoped
-public class UserSessionBean
+public class UserSessionBean implements Serializable
 {
+  private static final Logger logger = Logger.getLogger(UserSessionBean.class.getName());
+
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+
   static public final String BEAN_NAME = "userSession";
-  
-  HClient client;
-  
+
   @PostConstruct
   public void init()
   {
-    System.out.println("UserSessionBean init");
-    try {
-      client = new HClient().init();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    logger.info("UserSessionBean init");
   }
   
   public UserManager getUserManager()
   {
-    return new UserManager(client);
+    Context context = Configuration.getInstance().getContext();
+    return new UserManager(context);
   }
 
 }

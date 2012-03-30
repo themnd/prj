@@ -54,7 +54,7 @@ public class LoggedinFilter implements Filter
       if (!StringUtils.isEmpty(loginFormUrl)) {
         RedirectResponse
           .build()
-          .redirect(loginFormUrl)
+          .redirect("/webgui" + loginFormUrl)
           .process((HttpServletResponse) response);
       } else {
         throw new ServletException("Unauthorized access, unable to forward to login page");        

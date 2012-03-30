@@ -29,6 +29,16 @@ public class Domain
     this.name = name;
   }
   
+  public String getName()
+  {
+    return name;
+  }
+  
+  public void setName(String name)
+  {
+    this.name = name;
+  }
+  
   @OneToMany(
       mappedBy="domain",
       targetEntity=User.class,

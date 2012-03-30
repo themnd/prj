@@ -23,11 +23,36 @@ public class User
   String login;
   String name;
   String pwd;
+  String email;
   
-  public User(String login, String name, String pwd)
+  public User(String login, String name)
   {
     this.login = login;
     this.name = name;
+  }
+  
+  public long getId()
+  {
+    return id;
+  }
+  
+  public String getLogin()
+  {
+    return login;
+  }
+  
+  public String getName()
+  {
+    return name;
+  }
+  
+  public String getPwd()
+  {
+    return pwd;
+  }
+
+  public void setPwd(String pwd)
+  {
     this.pwd = pwd;
   }
   
@@ -35,5 +60,19 @@ public class User
   {
     return domain;
   }
-
+  
+  public void setDomain(Domain domain)
+  {
+    this.domain = domain;
+  }
+  
+  public String getEmail()
+  {
+    return email;
+  }
+  
+  public void setEmail(String email)
+  {
+    this.email = email;
+  }
 }

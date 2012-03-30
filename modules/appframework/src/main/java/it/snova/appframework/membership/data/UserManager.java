@@ -1,136 +1,170 @@
 package it.snova.appframework.membership.data;
 
+import it.snova.appframework.context.Context;
+import it.snova.appframework.security.PasswordEncrypter;
 import it.snova.appframework.security.PasswordGenerator;
-import it.snova.apptables.data.UsersTable;
-import it.snova.apptables.framework.Context;
-import it.snova.hbaselib.framework.HClient;
-import it.snova.hbaselib.schema.ScanProcessor;
-import it.snova.hbaselib.schema.ScanProcessorCounter;
-import it.snova.hbaselib.schema.ScanProcessorSingleResult;
-import it.snova.hbaselib.schema.SequenceBuilder;
-import it.snova.hbaselib.schema.TableBuilder;
-import it.snova.hbaselib.schema.Timetrack;
+import it.snova.dbschema.defaults.Defaults;
+import it.snova.dbschema.table.Domain;
+import it.snova.dbschema.table.User;
 
-import java.io.IOException;
+import java.util.List;
+import java.util.logging.Logger;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 public class UserManager
 {
   static PasswordGenerator pgen = PasswordGenerator.factory();
 
-  HClient client;
-  
-  public UserManager(HClient client)
+  protected static final Logger logger = Logger.getLogger(UserManager.class.getName());
+
+  Context context;
+
+  public UserManager()
   {
-    this.client = client;
+    this.context(null);
   }
   
-  public UserBean getUser(final String name) throws Exception
+  public UserManager(Context context)
   {
-    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
-    ScanProcessorSingleResult<UsersTable> scan =
-      (ScanProcessorSingleResult<UsersTable>) tb.scan().process(
-        new ScanProcessorSingleResult<UsersTable>(UsersTable.class) {
-          @Override
-          public boolean processSingleResult(UsersTable result) throws IOException
-          {
-            if (result.getName().equals(name)) {
-              return true;
-            }
-            return false;
-          }
-        });
-    if (scan.result != null) {
-      return createFromData(scan.result);
+    this.context(context);
+  }
+  
+  public UserManager context(Context context)
+  {
+    this.context = context;
+    return this;
+  }
+  
+  public User getUser(final String login) throws Exception
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<User> q = em.createQuery("SELECT u FROM User u where login=:login", User.class)
+        .setParameter("login", login);
+      return q.getSingleResult();
+    } catch (NoResultException e) {
+      logger.fine("no user with login " + login);
+      return null;
+    } finally {
+      em.close();
     }
-    return null;
   }
   
   public void iterate(final UserIterable iterable) throws Exception
   {
-    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
-    ScanProcessorSingleResult<UsersTable> scan =
-      (ScanProcessorSingleResult<UsersTable>) tb.scan().process(
-        new ScanProcessorSingleResult<UsersTable>(UsersTable.class) {
-          @Override
-          public boolean processSingleResult(UsersTable result)
-          {
-            return iterable.processUser(createFromData(result));
-          }
-        });
-    if (scan.result != null) {
-      createFromData(scan.result);
-    }    
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<User> q = em.createQuery("SELECT u FROM User u", User.class);
+      for (User u: q.getResultList()) {
+        if (iterable.processUser(u)) {
+          break;
+        }
+      }
+    } finally {
+      em.close();
+    }
   }
   
-  public UserBean loginUser(final String name, final String pwd) throws Exception
+  public void iterateForDomain(Domain d, final UserIterable iterable) throws Exception
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<User> q = em.createQuery("SELECT u FROM User u where domain=:domain", User.class)
+          .setParameter("domain", d);
+      for (User u: q.getResultList()) {
+        if (iterable.processUser(u)) {
+          break;
+        }
+      }
+    } finally {
+      em.close();
+    }
+  }
+
+  public User loginUser(final String name, final String pwd) throws Exception
   {
     return validateUser(getUser(name), pwd);
   }
   
-  public UserBean resetPassword(UserBean u)
+  public User resetPassword(User u)
   {
     u.setPwd(new String(pgen.generatePassword()));
     return u;
   }
   
-  public UserBean createNewUser() throws Exception
+  public void createUser(User u)
   {
-    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
+    EntityManager em = context.createEntityManager();
     
-    SequenceBuilder sb = tb.getSequence();
-
-    String userId = Long.toHexString(sb.getNextId());
-    UserBean u = new UserBean();
-    u.setId(userId);
-    u.setPwd(new String(pgen.generatePassword()));
-    return u;
-  }
-  
-  public void createUser(UserBean u) throws Exception
-  {
-    createUser(null, createFromUser(u));
-  }
-
-  public void createUser(Context c, UserBean u) throws Exception
-  {
-    createUser(c, createFromUser(u));
+    PasswordEncrypter e = new PasswordEncrypter();
+    char[] pwd = e.encrypt(new String(u.getPwd()).toCharArray());
+    u.setPwd(new String(pwd));
+    
+    em.persist(u);
+    em.close();
   }
   
   public int getUserCount() throws Exception
   {
-    return getUserCount(null);
-  }
-  
-  public int getUserCount(final UserIterable iterable) throws Exception
-  {
-    Timetrack track  = new Timetrack("getUserCount");
-    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
-    ScanProcessorCounter<UsersTable> scan =
-      (ScanProcessorCounter<UsersTable>) tb.scan().process(
-        new ScanProcessorCounter<UsersTable>(UsersTable.class) {
-
-          @Override
-          public boolean processSingleResult(UsersTable result) throws IOException
-          {
-            return true;
-          }
-
-        });
-    track.end();
-    return scan.getCount();
-  }
-
-  private void createUser(Context c, UsersTable u) throws Exception
-  {
-    TableBuilder<UsersTable> tb = client.getSchemaBuilder(UsersTable.class).getTableBuilder();
-    if (c != null) {
-      tb.add(c.with(u));
-    } else {
-      tb.add(u);
+    EntityManager em = context.createEntityManager();
+    try {
+      Query q = em.createQuery("SELECT count(id) FROM User u");
+      return q.getFirstResult();
+    } finally {
+      em.close();
     }
   }
   
-  private UserBean validateUser(UserBean u, String pwd)
+  public Domain getDomain(String name)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<Domain> q = em.createQuery("SELECT d FROM Domain d where name=:name", Domain.class)
+          .setParameter("name", name);
+      return q.getSingleResult();
+    } catch (NoResultException e) {
+      logger.fine("no domain with name " + name);
+      return null;
+    } finally {
+      em.close();
+    }    
+  }
+
+
+  public Domain getAdminDomain()
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<Domain> q = em.createQuery("SELECT d FROM Domain d where id=" + Defaults.ADMIN_DOMAIN_ID, Domain.class);
+      return q.getSingleResult();
+    } finally {
+      em.close();
+    }
+  }
+  
+  public List<Domain> getDomains()
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      TypedQuery<Domain> q = em.createQuery("SELECT d FROM Domain d", Domain.class);
+      return q.getResultList();
+    } finally {
+      em.close();
+    }    
+  }
+  
+  public void createDomain(Domain d)
+  {
+    EntityManager em = context.createEntityManager();
+    em.persist(d);
+    em.close();
+  }
+  
+  private User validateUser(User u, String pwd)
   {
     if (u != null) {
       if (pgen.verifyPassword(u.getPwd(), pwd)) {
@@ -140,29 +174,8 @@ public class UserManager
     return null;
   }
 
-  private UserBean createFromData(UsersTable u)
-  {
-    UserBean user = new UserBean();
-    user.setId(u.getId());
-    user.setName(u.getName());
-    user.setEmail(u.getEmail());
-    user.setPwd(u.getPwd());
-    return user;
-  }
-  
-  private UsersTable createFromUser(UserBean u)
-  {
-    UsersTable user = new UsersTable();
-    user.setId(u.getId());
-    user.setName(u.getName());
-    user.setEmail(u.getEmail());
-    user.setPwd(u.getPwd());
-    return user;
-  }
-  
   public interface UserIterable
   {
-    public boolean processUser(UserBean u);
+    public boolean processUser(User u);
   }
-
 }

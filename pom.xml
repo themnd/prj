@@ -18,12 +18,11 @@
     </plugins>
   </build>
   <modules>
-    <module>modules/hbaselib</module>
-    <module>modules/apptables</module>
     <module>modules/appframework</module>
+    <module>modules/dbschema</module>
     <module>modules/appinstall</module>
-    <module>modules/testapp</module>
     <module>modules/webgui</module>
+    <module>modules/testjpa</module>
   </modules>
   <name>Project Handler</name>
 </project>

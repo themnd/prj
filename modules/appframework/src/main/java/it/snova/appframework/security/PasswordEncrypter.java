@@ -3,13 +3,12 @@ package it.snova.appframework.security;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
-import org.apache.hadoop.hbase.util.Base64;
-import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.commons.codec.binary.Base64;
 
 public class PasswordEncrypter
 {
   final static int ITERATIONS = 1000;
-  final static byte fixSalt[] = Bytes.toBytes("s!$dkjhqw12yeiuqy98");
+  final static byte fixSalt[] = new String("s!$dkjhqw12yeiuqy98").getBytes();
   
   final static SecureRandom random = new SecureRandom();
   
@@ -34,8 +33,8 @@ public class PasswordEncrypter
         }
       }
       
-      StringBuffer saltR = new StringBuffer(Base64.encodeBytes(salt));
-      String pwdComplete = saltR.reverse().toString() + Base64.encodeBytes(pwd);
+      StringBuffer saltR = new StringBuffer(Base64.encodeBase64String(salt));
+      String pwdComplete = saltR.reverse().toString() + Base64.encodeBase64String(pwd);
       return pwdComplete.toCharArray();
     } catch (Exception e) {
       e.printStackTrace();
@@ -48,7 +47,7 @@ public class PasswordEncrypter
     try {
       MessageDigest messageDigest = getMessageDigest();
       
-      byte[] decodedSalt = Base64.decode(new String(salt));
+      byte[] decodedSalt = Base64.decodeBase64(new String(salt));
       byte[] decodedPwd = new String(passwd).getBytes("UTF-8");
       
       messageDigest.update(fixSalt);
@@ -64,7 +63,7 @@ public class PasswordEncrypter
         }
       }
       
-      return new String(Base64.encodeBytes(pwd)).toCharArray();
+      return Base64.encodeBase64String(pwd).toCharArray();
     } catch (Exception e) {
       e.printStackTrace();
     }

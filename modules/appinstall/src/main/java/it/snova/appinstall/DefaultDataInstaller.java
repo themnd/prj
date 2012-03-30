@@ -1,25 +1,25 @@
 package it.snova.appinstall;
 
+import it.snova.appframework.context.Context;
+import it.snova.appframework.membership.data.UserManager;
 import it.snova.appframework.security.PasswordEncrypter;
-import it.snova.apptables.data.Metadata;
-import it.snova.apptables.data.UsersTable;
-import it.snova.apptables.framework.Context;
-import it.snova.hbaselib.framework.DefaultValues;
-import it.snova.hbaselib.framework.HClient;
-import it.snova.hbaselib.schema.TableBuilder;
+import it.snova.dbschema.table.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
 public class DefaultDataInstaller
 {
-  HClient client;
+  Context context;
   List<Object> objects;
   
-  public DefaultDataInstaller(HClient client)
+  public DefaultDataInstaller(Context context)
   {
-    this.client = client;
+    this.context = context;
     objects = new ArrayList<Object>();
   }
   
@@ -31,37 +31,49 @@ public class DefaultDataInstaller
   
   public DefaultDataInstaller createObjects() throws Exception
   {
-    for (Object o: objects) {
-      createObject(o);
+    if (objects.size() > 0) {
+      EntityManager em = context.createEntityManager();
+      EntityTransaction tx = em.getTransaction();
+      try {
+        tx.begin();
+        
+        for (Object o: objects) {
+          createObject(em, o);
+        }      
+      } finally {
+        if (tx.isActive()) {
+          tx.commit();
+        } else {
+          tx.rollback();
+        }
+      }
     }
     return this;
   }
   
-  private void createObject(Object o) throws Exception
+  private void createObject(EntityManager em, Object o) throws Exception
   {
-    TableBuilder tb = client.getSchemaBuilder(o.getClass()).getTableBuilder();
-    if (o instanceof Metadata) {
-      tb.add(new Context().with((Metadata)o));
-    } else {
-      tb.add(o);
-    }
+    em.persist(o);
   }
 
-  static public DefaultDataInstaller install(HClient client) throws Exception
+  static public DefaultDataInstaller install(Context context) throws Exception
   {
-    PasswordEncrypter e = new PasswordEncrypter();
-    char[] pwd = e.encrypt(new String("admin").toCharArray());
+//    PasswordEncrypter e = new PasswordEncrypter();
+//    char[] pwd = e.encrypt(new String("admin").toCharArray());
 
-    UsersTable admin = new UsersTable();
-    admin.setId(DefaultValues.ADMINID);
-    admin.setDomainId("");
-    admin.setName("admin");
-    admin.setPwd(new String(pwd));
-    admin.setEmail("admin@admin.it");
-    
-    return new DefaultDataInstaller(client)
-      .addObject(admin)
-      .createObjects();
+    UserManager usrMgr = new UserManager(context);
+    if (usrMgr.getUser("admin") == null) {      
+      User admin = new User("admin", "Administrator");
+      admin.setDomain(usrMgr.getAdminDomain());
+//      admin.setPwd(new String(pwd));
+      admin.setPwd("admin");
+      admin.setEmail("admin@admin.it");
+      
+      return new DefaultDataInstaller(context)
+        .addObject(admin)
+        .createObjects();
+    }
+    return null;
   }
 
 }

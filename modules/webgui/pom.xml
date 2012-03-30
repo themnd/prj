@@ -9,9 +9,9 @@
   </parent>
   <artifactId>webgui</artifactId>
   <name>Web GUI</name>
+  <packaging>war</packaging>
 
   <properties>
-    <hbaselib.dir>${project.parent.basedir}/modules/hbaselib</hbaselib.dir>
     <appframework.dir>${project.parent.basedir}/modules/appframework</appframework.dir>
   </properties>
 
@@ -47,12 +47,14 @@
             </connector>
           </connectors>
           <scanIntervalSeconds>2</scanIntervalSeconds>
+          <!-- 
           <webAppConfig>
-            <extraClasspath>${hbaselib.dir}/target/classes;${appframework.dir}/target/classes</extraClasspath>
+            <extraClasspath>${appframework.dir}/target/classes</extraClasspath>
           </webAppConfig>
           <scanTargets>
-            <scanTarget>${hbaselib.dir}/target/classes;${appframework.dir}/target/classes</scanTarget>
+            <scanTarget>${appframework.dir}/target/classes</scanTarget>
           </scanTargets>
+          -->
         </configuration>
       </plugin>
     </plugins>
@@ -70,13 +72,8 @@
     </dependency>
     <dependency>
       <groupId>it.snova</groupId>
-      <artifactId>hbaselib</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>it.snova</groupId>
       <artifactId>appframework</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.faces</groupId>
@@ -115,8 +112,7 @@
     <dependency>
       <groupId>org.primefaces</groupId>
       <artifactId>primefaces</artifactId>
-      <version>3.1</version>
+      <version>3.2</version>
     </dependency>
   </dependencies>
-  <packaging>war</packaging>
 </project>

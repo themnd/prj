@@ -1,8 +1,9 @@
 package it.snova.web.gui.servlet;
 
-import it.snova.appframework.membership.data.UserBean;
+import it.snova.appframework.context.Context;
 import it.snova.appframework.membership.data.UserManager;
-import it.snova.hbaselib.framework.HClient;
+import it.snova.dbschema.table.User;
+import it.snova.web.gui.config.utils.Configuration;
 import it.snova.web.gui.servlet.exceptions.AppServletException;
 import it.snova.web.gui.servlet.parameters.ServletParameter;
 import it.snova.web.gui.servlet.response.AppResponse;
@@ -54,7 +55,7 @@ public class LoginServlet extends HttpServlet
       
       logger.info("logged in " + userName);
       
-      UserBean user = loginUser(userName, userPwd);
+      User user = loginUser(userName, userPwd);
       if (user != null) {
 
         setSessionUser(request, user);
@@ -77,30 +78,29 @@ public class LoginServlet extends HttpServlet
     }
   }
   
-  private UserBean loginUser(String name, String pwd) throws AppServletException
+  private User loginUser(String name, String pwd) throws AppServletException
   {
     try {
-      HClient client = new HClient().init();
-      UserManager userManager = new UserManager(client);
+      Context context = Configuration.getInstance().getContext();
+      UserManager userManager = new UserManager(context);
 
-      UserBean user = userManager.loginUser(name, pwd);
-      return user;
+      return userManager.loginUser(name, pwd);
     } catch (Exception e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
       throw new AppServletException(ClientErrorResponse.build());
     }
   }
   
-  static public UserBean getSessionUser(HttpServletRequest request)
+  static public User getSessionUser(HttpServletRequest request)
   {
     HttpSession session = ((HttpServletRequest)request).getSession(false);
     if (session != null) {
-      return (UserBean)session.getAttribute(LoginServlet.class.getName() + ".user");
+      return (User)session.getAttribute(LoginServlet.class.getName() + ".user");
     }
     return null;
   }
   
-  private void setSessionUser(HttpServletRequest request, UserBean user)
+  private void setSessionUser(HttpServletRequest request, User user)
   {
     HttpSession session = ((HttpServletRequest)request).getSession(true);
     session.setAttribute(LoginServlet.class.getName() + ".user", user);

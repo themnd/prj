@@ -1,5 +1,9 @@
 package it.snova.web.gui.listener;
 
+import it.snova.appframework.context.ConnectorOptions;
+import it.snova.appframework.context.Context;
+import it.snova.web.gui.config.utils.Configuration;
+
 import java.util.logging.Logger;
 
 import javax.servlet.ServletContextEvent;
@@ -15,6 +19,17 @@ public class AppContextListener implements ServletContextListener
 //    Injector injector = Guice.createInjector(new RSSModule());
 //    Injector child = injector.createChildInjector(new DummyModule());
 //    WireApp.init(child);
+    
+    Configuration config = Configuration.getInstance();
+    ConnectorOptions options = new ConnectorOptions()
+      .dbname("app")
+      .username("root")
+      .password("root");
+    
+    logger.info("options:" + options.url());
+
+    config.setContext(new Context().setOptions(options).init());
+    
     logger.info("contextInitialized");
   }
 

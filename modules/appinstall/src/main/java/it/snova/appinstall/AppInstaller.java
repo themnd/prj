@@ -1,13 +1,13 @@
 package it.snova.appinstall;
 
-import it.snova.hbaselib.framework.HClient;
+import it.snova.appframework.context.Context;
 
 public class AppInstaller
 {
-  static public void install(HClient client) throws Exception
+  static public void install(Context context) throws Exception
   {
-    SchemaInstaller.install(client);
-    SequenceInstaller.install(client);
-    DefaultDataInstaller.install(client);
+//    SchemaInstaller.install(context);
+//    SequenceInstaller.install(context);
+    DefaultDataInstaller.install(context);
   }
 }

@@ -10,21 +10,60 @@
 
 <h:body>
 
-<h:form id="form"> 
+<h:form id="form">
 <p:dashboard model="#{adminDashboard.model}">
-  <p:panel id="Users" header="Users">
 
-		<p:inputText id="userListText" value="#{userList.filter}">
-		 <p:ajax update="userList" event="keyup"/>
+  <p:panel id="Domains" header="Domains">
+    <p:selectOneListbox id="domainList" value="#{userList.model.selectedDomain}">
+      <f:selectItems value="#{userList.availableDomains}"/>
+      <p:ajax update="userList" event="change"/>
+    </p:selectOneListbox>
+    <p:commandButton value="New domain" onclick="newDomainDlg.show();"/>
+  </p:panel>
+  
+  <p:panel id="Users" header="Users">
+		<p:inputText id="userListText" value="#{userList.model.loginFilter}">
+		  <p:ajax update="userList" event="keyup"/>
 		</p:inputText>
-		<p:dataTable id="userList" var="user" value="#{userList.model}" paginator="true" rows="10">
+    <p:contextMenu for="userList">
+	    <p:menuitem value="Modify" update="userList" icon="ui-icon-search" oncomplete="newUserDlg.show()"/>
+	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" actionListener="#{userList.deleteUser}"/>
+    </p:contextMenu>
+		<p:dataTable
+		  id="userList"
+		  var="user"
+		  value="#{userList.model}"
+		  selection="#{userList.selectedUser}"
+		  selectionMode="single"
+		  rowKey="#{user.login}"
+		  paginator="true"
+		  rows="10">
+      <p:column>
+        <f:facet name="header">
+          <h:outputText value="Domain" />
+        </f:facet>
+        <h:outputText value="#{user.domain}" />
+      </p:column>
 	    <p:column>
 				<f:facet name="header">
-					<h:outputText value="Name" />
+					<h:outputText value="Login" />
 				</f:facet>
-	      <h:outputText value="#{user.name}" />
+	      <h:outputText value="#{user.login}" />
 	    </p:column>
+      <p:column>
+        <f:facet name="header">
+          <h:outputText value="Name" />
+        </f:facet>
+        <h:outputText value="#{user.name}" />
+      </p:column>
+      <p:column>
+        <f:facet name="header">
+          <h:outputText value="Email" />
+        </f:facet>
+        <h:outputText value="#{user.email}" />
+      </p:column>
 	  </p:dataTable>
+	  <p:commandButton value="New user" onclick="newUserDlg.show();"/>
   </p:panel>
   <p:panel id="Groups" header="Groups">
     <h:outputText value="Groups Content" />
@@ -32,7 +71,52 @@
 </p:dashboard>
 
 </h:form>
-<p:growl id="messages" />
 
+ <p:dialog id="domainDlg" header="New domain" widgetVar="newDomainDlg" modal="true" height="100">
+  <h:form id="formdomain">
+
+    <h:panelGrid columns="2" style="margin-bottom:10px">
+      <h:outputLabel for="name" value="name" />
+      <p:inputText id="name" required="true" value="#{domain.name}">
+        <f:validateLength minimum="2" />
+      </p:inputText>
+    </h:panelGrid>
+
+    <p:commandButton id="submitButtonDomain" value="Submit" actionListener="#{domain.save}" update=":form:domainList, :messages" oncomplete="newDomainDlg.hide();"/>
+      
+  </h:form>
+ </p:dialog> 
+ <p:dialog id="userDlg" header="New user" widgetVar="newUserDlg" modal="true" height="250">  
+  <h:form id="formuser">
+
+    <h:panelGrid columns="2" style="margin-bottom:10px">
+    
+			<h:outputText for="udomain" value="Domain" />  
+      <p:selectOneMenu id="udomain" value="#{user.domain}">
+        <f:selectItems value="#{userList.existingDomains}"/>
+      </p:selectOneMenu>  
+      <h:outputLabel for="ulogin" value="login" />
+      <p:inputText id="ulogin" required="true" value="#{user.login}">
+        <f:validateLength minimum="2" />
+      </p:inputText>
+      <h:outputLabel for="uname" value="name" />
+      <p:inputText id="uname" required="true" value="#{user.name}">
+        <f:validateLength minimum="2" />
+      </p:inputText>
+      <h:outputLabel for="upwd" value="password" />
+      <p:inputText id="upwd" required="true" value="#{user.pwd}">
+        <f:validateLength minimum="4" />
+      </p:inputText>
+      <h:outputLabel for="uemail" value="email" />
+      <p:inputText id="uemail" required="true" value="#{user.email}">
+      </p:inputText>
+    </h:panelGrid>
+
+    <p:commandButton id="submitButtonUser" value="Submit" actionListener="#{user.save}" update=":form:userList, :messages" oncomplete="newUserDlg.hide();"/>
+      
+  </h:form>
+ </p:dialog> 
+
+<p:growl id="messages" />
 </h:body>
 </html>
