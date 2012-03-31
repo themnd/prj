@@ -15,16 +15,12 @@
 
   <p:panel id="Domains" header="Domains">
     <p:selectOneListbox id="domainList" value="#{userList.model.selectedDomain}">
-      <f:selectItems value="#{userList.availableDomains}"/>
-      <p:ajax update="userList" event="change"/>
+      <f:selectItems value="#{userList.existingDomains}"/>
     </p:selectOneListbox>
     <p:commandButton value="New domain" onclick="newDomainDlg.show();"/>
   </p:panel>
   
   <p:panel id="Users" header="Users">
-		<p:inputText id="userListText" value="#{userList.model.loginFilter}">
-		  <p:ajax update="userList" event="keyup"/>
-		</p:inputText>
     <p:contextMenu for="userList">
 	    <p:menuitem value="Modify" update="userList" icon="ui-icon-search" oncomplete="newUserDlg.show()"/>
 	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" onclick="confirmation.show()"/>

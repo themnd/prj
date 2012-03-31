@@ -25,6 +25,7 @@
   </repositories>
 
   <build>
+    <finalName>webgui</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -86,8 +86,6 @@ public class UserBean implements Serializable
     
     UserManager mgr = getUserSession().getUserManager();
     
-//    FacesMessage msg = null;
-    
     Domain d = mgr.getDomain(domain);
     
     User u = new User(login, name);
@@ -100,25 +98,7 @@ public class UserBean implements Serializable
     login = "";
     name = "";
     pwd = "";
-    email = "";
-    
-//    List<Domain> domains = mgr.getDomains();
-//    for (Domain d: domains) {
-//      if (d.getName().equals(name)) {
-//        msg = new FacesMessage(
-//            FacesMessage.SEVERITY_ERROR,
-//            "Domain with name " + name + " already exists!",
-//            null);
-//        break;
-//      }
-//    }
-//    if (msg == null) {
-//      Domain d = new Domain(name);
-//      mgr.createDomain(d);
-//      msg = new FacesMessage("Domain " + name + " has been created");
-//      name = "";
-//    }
-//    FacesContext.getCurrentInstance().addMessage(null, msg);
+    email = "";    
   }
 
   public UserSessionBean getUserSession()

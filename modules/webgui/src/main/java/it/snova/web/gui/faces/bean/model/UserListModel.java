@@ -30,12 +30,10 @@ public class UserListModel extends LazyDataModel<UserBean>
   private UserSessionBean userSession;
 
   private List<UserBean> users = new ArrayList<UserBean>();
-  private String loginFilter;
   private String selectedDomain = Defaults.ALL_DOMAINS;
 
   public UserListModel()
   {
-    loginFilter = "";
   }
 
   @Override
@@ -99,16 +97,6 @@ public class UserListModel extends LazyDataModel<UserBean>
     bean.setEmail(u.getEmail());
     bean.setPwd(u.getPwd());
     return bean;
-  }
-  
-  public String getLoginFilter()
-  {
-    return loginFilter;
-  }
-  
-  public void setLoginFilter(String loginFilter)
-  {
-    this.loginFilter = loginFilter;
   }
   
   public String getSelectedDomain()
