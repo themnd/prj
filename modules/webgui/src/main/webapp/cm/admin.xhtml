@@ -39,7 +39,7 @@
 		  value="#{userList.model}"
 		  selection="#{userList.selectedUser}"
 		  selectionMode="single"
-		  rowKey="#{user.login}"
+		  rowKey="#{user.id}"
 		  paginator="true"
 		  rows="10">
       <p:column
@@ -76,6 +76,32 @@
   </p:panel>
   <p:panel id="Groups" header="Groups">
     <h:outputText value="Groups Content" />
+    <p:dataTable
+      id="groupList"
+      var="group"
+      value="#{groupList.model}"
+      selection="#{groupList.selectedGroup}"
+      selectionMode="single"
+      rowKey="#{group.id}"
+      paginator="true"
+      rows="10">
+      <p:column
+        headerText="Domain"
+        filterBy="#{group.domain}"
+        filterOptions="#{groupList.availableDomains}"
+        filterMatchMode="exact"
+      >
+        <h:outputText value="#{group.domain}" />
+      </p:column>
+      <p:column
+        headerText="Name"
+        filterBy="#{group.name}"
+        filterMatchMode="contains"
+      >
+        <h:outputText value="#{group.name}" />
+      </p:column>
+    </p:dataTable>
+    <p:commandButton value="New group" onclick="newGroupDlg.show();"/>
   </p:panel>
 </p:dashboard>
 
@@ -122,6 +148,25 @@
     </h:panelGrid>
 
     <p:commandButton id="submitButtonUser" value="Submit" actionListener="#{user.save}" update=":form:userList, :messages" oncomplete="newUserDlg.hide();"/>
+      
+  </h:form>
+ </p:dialog> 
+ <p:dialog id="groupDlg" header="New group" widgetVar="newGroupDlg" modal="true" height="250">  
+  <h:form id="formgroup">
+
+    <h:panelGrid columns="2" style="margin-bottom:10px">
+    
+      <h:outputText for="gdomain" value="Domain" />  
+      <p:selectOneMenu id="gdomain" value="#{group.domain}">
+        <f:selectItems value="#{groupList.domains}"/>
+      </p:selectOneMenu>
+      <h:outputLabel for="gname" value="name" />
+      <p:inputText id="gname" required="true" value="#{group.name}">
+        <f:validateLength minimum="2" />
+      </p:inputText>
+    </h:panelGrid>
+
+    <p:commandButton id="submitButtonGroup" value="Submit" actionListener="#{group.save}" update=":form:groupList, :messages" oncomplete="newGroupDlg.hide();"/>
       
   </h:form>
  </p:dialog> 

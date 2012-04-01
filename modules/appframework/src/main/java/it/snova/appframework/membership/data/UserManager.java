@@ -5,6 +5,7 @@ import it.snova.appframework.security.PasswordEncrypter;
 import it.snova.appframework.security.PasswordGenerator;
 import it.snova.dbschema.defaults.Defaults;
 import it.snova.dbschema.table.Domain;
+import it.snova.dbschema.table.Group;
 import it.snova.dbschema.table.User;
 
 import java.util.List;
@@ -203,7 +204,75 @@ public class UserManager
       em.close();
     }
   }
+
+  public void createGroup(Group g)
+  {
+    EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+    
+      em.persist(g);
+      
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
+  }
+
+  public List<Group> getGroups(Domain d)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      String sql = "SELECT g FROM Group g";
+      if (d != null) {
+        sql += " where domain=:domain";
+      }
+      TypedQuery<Group> q = em.createQuery(sql, Group.class);
+      if (d != null) {
+        q.setParameter("domain", d);
+      }
+      return q.getResultList();
+    } finally {
+      em.close();
+    }
+  }
   
+  public List<Group> getAllGroups()
+  {
+    return getGroups(null);
+  }
+
+  public void iterateGroups(Domain d, final GroupIterable iterable)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      String sql = "SELECT g FROM Group g";
+      if (d != null) {
+        sql += " where domain=:domain";
+      }
+      TypedQuery<Group> q = em.createQuery(sql, Group.class);
+      if (d != null) {
+        q.setParameter("domain", d);
+      }
+      for (Group g: q.getResultList()) {
+        if (iterable.process(g)) {
+          break;
+        }
+      }
+    } finally {
+      em.close();
+    }
+  }
+
+  public void iterateGroups(final GroupIterable iterable)
+  {
+    iterateGroups(null, iterable);
+  }
+
   private User validateUser(User u, String pwd)
   {
     if (u != null) {
@@ -218,4 +287,10 @@ public class UserManager
   {
     public boolean processUser(User u);
   }
+
+  public interface GroupIterable
+  {
+    public boolean process(Group u);
+  }
+
 }

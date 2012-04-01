@@ -2,7 +2,7 @@ package it.snova.web.gui.faces.bean;
 
 import it.snova.appframework.membership.data.UserManager;
 import it.snova.dbschema.table.Domain;
-import it.snova.dbschema.table.User;
+import it.snova.dbschema.table.Group;
 
 import java.io.Serializable;
 import java.util.logging.Logger;
@@ -10,10 +10,10 @@ import java.util.logging.Logger;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 
-@ManagedBean(name = "user")
-public class UserBean implements Serializable
+@ManagedBean(name = "group")
+public class GroupBean implements Serializable
 {
-  private static final Logger logger = Logger.getLogger(UserBean.class.getName());
+  private static final Logger logger = Logger.getLogger(GroupBean.class.getName());
 
   @ManagedProperty(value="#{" + UserSessionBean.BEAN_NAME + "}")
   private UserSessionBean userSession;
@@ -24,27 +24,22 @@ public class UserBean implements Serializable
   private static final long serialVersionUID = 1L;
   
   private long id;
-  
-  private String domain;
-  
-  private String login;
+  private String domain;  
   private String name;
-  private String pwd;
-  private String email;
 
-  public UserBean()
+  public GroupBean()
   {
-    id = 0;
+    this.id = 0;
   }
   
-  public UserBean(long id)
+  public GroupBean(long id)
   {
     this.id = id;
   }
   
   public long getId()
   {
-    return this.id;
+    return id;
   }
   
   public String getDomain()
@@ -67,55 +62,21 @@ public class UserBean implements Serializable
     this.name = name;
   }
   
-  public String getLogin()
-  {
-    return login;
-  }
-
-  public void setLogin(String login)
-  {
-    this.login = login;
-  }
-
-  public String getPwd()
-  {
-    return pwd;
-  }
-
-  public void setPwd(String pwd)
-  {
-    this.pwd = pwd;
-  }
-
-  public String getEmail()
-  {
-    return email;
-  }
-
-  public void setEmail(String email)
-  {
-    this.email = email;
-  }
-  
   public void save()
   {
-    logger.info("Save user " + name);
+    logger.info("Save group " + name);
     
     UserManager mgr = getUserSession().getUserManager();
     
     Domain d = mgr.getDomain(domain);
+    Group g = new Group();
+    g.setDomain(d);
+    g.setName(name);
     
-    User u = new User(login, name);
-    u.setEmail(email);
-    u.setPwd(pwd);
-    u.setDomain(d);
-    
-    mgr.createUser(u);
-    
-    login = "";
+    mgr.createGroup(g);
+
+    domain = "";
     name = "";
-    pwd = "";
-    email = "";    
   }
 
   public UserSessionBean getUserSession()
