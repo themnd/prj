@@ -1,7 +1,8 @@
 package it.snova.web.gui.faces.bean.model;
 
+import it.snova.appframework.membership.data.DBIterator;
+import it.snova.appframework.membership.data.DBIterator.GroupIterator;
 import it.snova.appframework.membership.data.UserManager;
-import it.snova.appframework.membership.data.UserManager.GroupIterable;
 import it.snova.dbschema.defaults.Defaults;
 import it.snova.dbschema.table.Domain;
 import it.snova.dbschema.table.Group;
@@ -39,18 +40,18 @@ public class GroupListModel extends LazyDataModel<GroupBean>
   @Override
   public List<GroupBean> load(int first, int pageSize, String sortField, SortOrder sortOrder, final Map<String,String> filters)
   {
-    System.out.println("first: " + first);
-    System.out.println("pageSize: " + pageSize);
-    System.out.println("sortField: " + sortField);
-    System.out.println("sortOrder: " + sortOrder.toString());
-    System.out.println("filter: " + filters.toString());
+//    System.out.println("first: " + first);
+//    System.out.println("pageSize: " + pageSize);
+//    System.out.println("sortField: " + sortField);
+//    System.out.println("sortOrder: " + sortOrder.toString());
+//    System.out.println("filter: " + filters.toString());
 
     groups.clear();
     
     try {
       UserManager userMgr = getUserSession().getUserManager();
       
-      GroupIterable iter = new GroupIterable() {
+      GroupIterator iter = new GroupIterator() {
         
         @Override
         public boolean process(Group g)
@@ -65,16 +66,20 @@ public class GroupListModel extends LazyDataModel<GroupBean>
           return false;
         }
       };
+      Domain d = null;
       if (filters.containsKey("domain")) {
         String domain = filters.get("domain");
-        Domain d = userMgr.getDomain(domain);
-        userMgr.iterateGroups(d, iter);
-      } else {
-        userMgr.iterateGroups(iter);        
+        d = userMgr.getDomain(domain);
       }
+      
+      userMgr.iterateGroups(d, new DBIterator<Group>()
+          .setStart(first)
+          .setLimit(pageSize)
+          .setIterator(iter));
 
-      logger.info("End groups size: " + groups.size());
-      setRowCount(groups.size());
+      int count = userMgr.getGroupCount(d);
+      logger.fine("Group count: " + count);
+      setRowCount(count);
     } catch (Exception e) {
       e.printStackTrace();
     }

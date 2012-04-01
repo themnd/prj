@@ -1,7 +1,8 @@
 package it.snova.web.gui.faces.bean.model;
 
+import it.snova.appframework.membership.data.DBIterator;
+import it.snova.appframework.membership.data.DBIterator.UserIterator;
 import it.snova.appframework.membership.data.UserManager;
-import it.snova.appframework.membership.data.UserManager.UserIterable;
 import it.snova.dbschema.defaults.Defaults;
 import it.snova.dbschema.table.Domain;
 import it.snova.dbschema.table.User;
@@ -39,21 +40,21 @@ public class UserListModel extends LazyDataModel<UserBean>
   @Override
   public List<UserBean> load(int first, int pageSize, String sortField, SortOrder sortOrder, final Map<String,String> filters)
   {
-    System.out.println("first: " + first);
-    System.out.println("pageSize: " + pageSize);
-    System.out.println("sortField: " + sortField);
-    System.out.println("sortOrder: " + sortOrder.toString());
-    System.out.println("filter: " + filters.toString());
+//    System.out.println("first: " + first);
+//    System.out.println("pageSize: " + pageSize);
+//    System.out.println("sortField: " + sortField);
+//    System.out.println("sortOrder: " + sortOrder.toString());
+//    System.out.println("filter: " + filters.toString());
 
     users.clear();
     
     try {
       UserManager userMgr = getUserSession().getUserManager();
       
-      UserIterable iter = new UserIterable() {
+      UserIterator iter = new UserIterator() {
         
         @Override
-        public boolean processUser(User u)
+        public boolean process(User u)
         {
           boolean add = true;
           if (filters.containsKey("login")) {
@@ -71,16 +72,19 @@ public class UserListModel extends LazyDataModel<UserBean>
           return false;
         }
       };
+      Domain d = null;
       if (filters.containsKey("domain")) {
         String domain = filters.get("domain");
-        Domain d = userMgr.getDomain(domain);
-        userMgr.iterateForDomain(d, iter);
-      } else {
-        userMgr.iterate(iter);        
+        d = userMgr.getDomain(domain);
       }
+      userMgr.iterate(d, new DBIterator<User>()
+        .setStart(first)
+        .setLimit(pageSize)
+        .setIterator(iter));
 
-      logger.info("End Users size: " + users.size());
-      setRowCount(users.size());
+      int count = userMgr.getUserCount(d);
+      logger.fine("User count: " + count);
+      setRowCount(count);
     } catch (Exception e) {
       e.printStackTrace();
     }
