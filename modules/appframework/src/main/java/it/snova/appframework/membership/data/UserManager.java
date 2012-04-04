@@ -226,6 +226,18 @@ public class UserManager
       em.close();
     }
   }
+  
+  public Group getGroup(long id)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      Group g = em.find(Group.class, id);
+      em.detach(g);
+      return g;
+    } finally {
+      em.close();
+    }    
+  }
 
   public List<Group> getGroups(Domain d)
   {
@@ -266,6 +278,63 @@ public class UserManager
   public List<Group> getAllGroups()
   {
     return getGroups(null);
+  }
+  
+  public Group findGroup(final Long id)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      return em.find(Group.class, id);
+    } catch (NoResultException e) {
+      logger.fine("no group with id " + id);
+      return null;
+    } finally {
+      em.close();
+    }
+  }
+
+  public void deleteGroup(Group g)
+  {
+    EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+
+      Group group = em.find(Group.class, g.getId());
+      em.remove(group);
+
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
+  }
+  
+  public void setGroupMembers(Group g, long[] userIds)
+  {
+    EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+
+      Group group = em.find(Group.class, g.getId());
+      
+      group.getMembers().clear();
+      for (long id: userIds) {
+        User u = em.find(User.class, id);
+        group.addMember(u);
+      }
+      em.persist(group);
+
+      tx.commit();
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }    
   }
 
   public void iterateGroups(Domain d, final DBIterator<Group> iterator)

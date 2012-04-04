@@ -1,7 +1,9 @@
 package it.snova.web.gui.faces.bean;
 
+import it.snova.appframework.membership.data.UserManager;
 import it.snova.dbschema.defaults.Defaults;
 import it.snova.dbschema.table.Domain;
+import it.snova.dbschema.table.Group;
 import it.snova.web.gui.faces.bean.model.GroupListModel;
 
 import java.io.Serializable;
@@ -33,6 +35,8 @@ public class GroupListBean implements Serializable
   
   private GroupListModel model;
   private GroupBean selectedGroup;
+  
+  private GroupUsersDialogBean dialog;
 
   @PostConstruct
   public void init()
@@ -41,6 +45,7 @@ public class GroupListBean implements Serializable
     model.setUserSession(userSession);
     
     selectedGroup = null;
+    dialog = null;
   }
   
   public LazyDataModel<GroupBean> getModel()
@@ -56,15 +61,18 @@ public class GroupListBean implements Serializable
   public void setSelectedGroup(GroupBean selectedGroup)
   {
     this.selectedGroup = selectedGroup;
+    dialog = new GroupUsersDialogBean(getSelectedGroup());
+    dialog.setUserSession(getUserSession());
+    dialog.init();
   }
   
-  public void deleteUser()
+  public void deleteGroup()
   {
-//    logger.info("removing user " + selectedGroup.getLogin());
-//    
-//    UserManager userMgr = getUserSession().getUserManager();
-//    User u = userMgr.getUser(selectedGroup.getLogin());
-//    userMgr.deleteUser(u);
+    logger.info("removing group " + selectedGroup.getName());
+    
+    UserManager userMgr = getUserSession().getUserManager();
+    Group g = userMgr.findGroup(selectedGroup.getId());
+    userMgr.deleteGroup(g);
   }
   
   public List<SelectItem> getAvailableDomains()
@@ -90,6 +98,11 @@ public class GroupListBean implements Serializable
     return domains;
   }
   
+  public GroupUsersDialogBean getGroupUsersDialog()
+  {
+    return dialog;
+  }
+  
   public UserSessionBean getUserSession()
   {
     return userSession;
@@ -97,7 +110,6 @@ public class GroupListBean implements Serializable
 
   public void setUserSession(UserSessionBean userSession)
   {
-    logger.info("set session");
     this.userSession = userSession;
   }
   

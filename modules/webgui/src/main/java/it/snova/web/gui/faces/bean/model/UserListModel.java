@@ -92,7 +92,7 @@ public class UserListModel extends LazyDataModel<UserBean>
     return users;
   }
   
-  private UserBean create(User u)
+  static public UserBean create(User u)
   {
     UserBean bean = new UserBean(u.getId());
     bean.setDomain(u.getDomain().getName());

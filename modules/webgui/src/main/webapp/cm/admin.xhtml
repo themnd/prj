@@ -23,14 +23,14 @@
   <p:panel id="Users" header="Users">
     <p:contextMenu for="userList">
 	    <p:menuitem value="Modify" update="userList" icon="ui-icon-search" oncomplete="newUserDlg.show()"/>
-	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" onclick="confirmation.show()"/>
+	    <p:menuitem value="Delete" update="userList" icon="ui-icon-close" onclick="confirmDeleteUser.show()"/>
     </p:contextMenu>
-	  <p:confirmDialog id="confirmDeleteDialog" message="Are you sure you want to remove the selected user?"
-	        header="Delete user" severity="alert" widgetVar="confirmation">
+	  <p:confirmDialog id="confirmDeleteUserDialog" message="Are you sure you want to remove the selected user?"
+	        header="Delete user" severity="alert" widgetVar="confirmDeleteUser">
 	        
-	    <p:commandButton id="confirm" value="Yes" update=":form:userList, :messages" oncomplete="confirmation.hide()"
+	    <p:commandButton id="confirm" value="Yes" update=":form:userList, :messages" oncomplete="confirmDeleteUser.hide()"
 	          actionListener="#{userList.deleteUser}" />
-	    <p:commandButton id="decline" value="Not" onclick="confirmation.hide()" type="button" /> 
+	    <p:commandButton id="decline" value="No" onclick="confirmDeleteUser.hide()" type="button" /> 
 	        
 	  </p:confirmDialog>
 		<p:dataTable
@@ -76,6 +76,18 @@
   </p:panel>
   <p:panel id="Groups" header="Groups">
     <h:outputText value="Groups Content" />
+    <p:contextMenu for="groupList">
+      <p:menuitem value="Members" update=":groupUsersDlg" icon="ui-icon-search" oncomplete="jsgroupUsersDlg.show()"/>
+      <p:menuitem value="Delete" update="groupList" icon="ui-icon-close" onclick="confirmDeleteGroup.show()"/>
+    </p:contextMenu>
+    <p:confirmDialog id="confirmDeleteGroupDialog" message="Are you sure you want to remove the selected group?"
+          header="Delete group" severity="alert" widgetVar="confirmDeleteGroup">
+          
+      <p:commandButton id="gconfirm" value="Yes" update=":form:groupList, :messages" oncomplete="confirmDeleteGroup.hide()"
+            actionListener="#{groupList.deleteGroup}" />
+      <p:commandButton id="gdecline" value="No" onclick="confirmDeleteGroup.hide()" type="button" /> 
+          
+    </p:confirmDialog>
     <p:dataTable
       id="groupList"
       var="group"
@@ -169,7 +181,22 @@
     <p:commandButton id="submitButtonGroup" value="Submit" actionListener="#{group.save}" update=":form:groupList, :messages" oncomplete="newGroupDlg.hide();"/>
       
   </h:form>
- </p:dialog> 
+ </p:dialog>
+ <p:dialog id="groupUsersDlg" header="Users of group" widgetVar="jsgroupUsersDlg" modal="true" height="250">
+  <h:form id="formGroupUsersDlg">
+   <p:pickList
+     id="groupUsersDlg_pickList"
+     value="#{groupList.groupUsersDialog.model}"
+     var="u"
+     itemLabel="#{u.name}"
+     itemValue="#{u}"
+     rendered="#{not empty groupList.selectedGroup}"
+     converter="userPickListConverter"
+   >
+   </p:pickList>
+   <p:commandButton id="groupUsersDlg_Submit" value="Submit" update=":messages" oncomplete="jsgroupUsersDlg.hide();"/>
+  </h:form>
+ </p:dialog>
 
 <p:growl id="messages" />
 </h:body>
