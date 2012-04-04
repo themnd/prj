@@ -86,7 +86,6 @@ public class GroupBean implements Serializable
 
   public void setUserSession(UserSessionBean userSession)
   {
-    logger.info("set session");
     this.userSession = userSession;
   }
 
