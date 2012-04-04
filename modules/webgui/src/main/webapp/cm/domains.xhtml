@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="./adminTemplate.xhtml">
+
+  <ui:define name="content">
+    <h:form id="form">
+      <p:panel id="Domains" header="Domains">
+        <p:selectOneListbox id="domainList" value="#{userList.model.selectedDomain}">
+          <f:selectItems value="#{userList.existingDomains}"/>
+        </p:selectOneListbox>
+        <p:commandButton value="New domain" onclick="newDomainDlg.show();"/>
+      </p:panel>
+    </h:form>
+
+    <p:dialog id="domainDlg" header="New domain" widgetVar="newDomainDlg" modal="true" height="100">
+      <h:form>
+
+        <h:panelGrid columns="2" style="margin-bottom:10px">
+          <h:outputLabel for="name" value="name" />
+          <p:inputText id="name" required="true" value="#{domain.name}">
+            <f:validateLength minimum="2" />
+          </p:inputText>
+        </h:panelGrid>
+
+        <p:commandButton id="submitButtonDomain" value="Submit" actionListener="#{domain.save}" update=":form:domainList, :messages" oncomplete="newDomainDlg.hide();"/>
+
+      </h:form>
+    </p:dialog>
+
+  </ui:define>
+
+
+</ui:composition>

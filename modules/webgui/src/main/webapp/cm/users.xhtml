@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="./adminTemplate.xhtml">
+
+  <ui:define name="content">
+    <h:form id="form">
+      <p:panel id="Users" header="Users">
+        <p:contextMenu for="userList">
+          <p:menuitem value="Modify" update="userList" icon="ui-icon-search" oncomplete="newUserDlg.show()"/>
+          <p:menuitem value="Delete" update="userList" icon="ui-icon-close" onclick="confirmDeleteUser.show()"/>
+        </p:contextMenu>
+        <p:confirmDialog id="confirmDeleteUserDialog" message="Are you sure you want to remove the selected user?"
+              header="Delete user" severity="alert" widgetVar="confirmDeleteUser">
+
+          <p:commandButton id="confirm" value="Yes" update=":form:userList, :messages" oncomplete="confirmDeleteUser.hide()"
+                actionListener="#{userList.deleteUser}" />
+          <p:commandButton id="decline" value="No" onclick="confirmDeleteUser.hide()" type="button" />
+
+        </p:confirmDialog>
+        <p:dataTable
+          id="userList"
+          var="user"
+          value="#{userList.model}"
+          selection="#{userList.selectedUser}"
+          selectionMode="single"
+          rowKey="#{user.id}"
+          paginator="true"
+          rows="10">
+          <p:column
+            headerText="Domain"
+            filterBy="#{user.domain}"
+            filterOptions="#{userList.availableDomains}"
+            filterMatchMode="exact"
+          >
+            <h:outputText value="#{user.domain}" />
+          </p:column>
+          <p:column
+            headerText="Login"
+            filterBy="#{user.login}"
+            filterMatchMode="contains"
+          >
+            <h:outputText value="#{user.login}" />
+          </p:column>
+          <p:column
+            headerText="Name"
+            filterBy="#{user.name}"
+            filterMatchMode="contains"
+          >
+            <h:outputText value="#{user.name}" />
+          </p:column>
+          <p:column
+            headerText="Email"
+            filterBy="#{user.email}"
+            filterMatchMode="contains"
+          >
+            <h:outputText value="#{user.email}" />
+          </p:column>
+        </p:dataTable>
+        <p:commandButton value="New user" onclick="newUserDlg.show();"/>
+      </p:panel>
+    </h:form>
+
+    <p:dialog id="userDlg" header="New user" widgetVar="newUserDlg" modal="true" height="250">
+      <h:form id="formuser">
+
+        <h:panelGrid columns="2" style="margin-bottom:10px">
+
+          <h:outputText for="udomain" value="Domain" />
+          <p:selectOneMenu id="udomain" value="#{user.domain}">
+            <f:selectItems value="#{userList.existingDomains}"/>
+          </p:selectOneMenu>
+          <h:outputLabel for="ulogin" value="login" />
+          <p:inputText id="ulogin" required="true" value="#{user.login}">
+            <f:validateLength minimum="2" />
+          </p:inputText>
+          <h:outputLabel for="uname" value="name" />
+          <p:inputText id="uname" required="true" value="#{user.name}">
+            <f:validateLength minimum="2" />
+          </p:inputText>
+          <h:outputLabel for="upwd" value="password" />
+          <p:inputText id="upwd" required="true" value="#{user.pwd}">
+            <f:validateLength minimum="4" />
+          </p:inputText>
+          <h:outputLabel for="uemail" value="email" />
+          <p:inputText id="uemail" required="true" value="#{user.email}">
+          </p:inputText>
+        </h:panelGrid>
+
+        <p:commandButton id="submitButtonUser" value="Submit" actionListener="#{user.save}" update=":form:userList, :messages" oncomplete="newUserDlg.hide();"/>
+
+      </h:form>
+    </p:dialog>
+
+
+  </ui:define>
+
+
+</ui:composition>

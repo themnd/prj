@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="./adminTemplate.xhtml">
+
+  <ui:define name="content">
+    <h:form id="form">
+      <p:panel id="Groups" header="Groups">
+        <p:contextMenu for="groupList">
+          <p:menuitem value="Members" update=":groupUsersDlg" icon="ui-icon-search" oncomplete="jsgroupUsersDlg.show()"/>
+          <p:menuitem value="Delete" update="groupList" icon="ui-icon-close" onclick="confirmDeleteGroup.show()"/>
+        </p:contextMenu>
+        <p:confirmDialog id="confirmDeleteGroupDialog" message="Are you sure you want to remove the selected group?"
+              header="Delete group" severity="alert" widgetVar="confirmDeleteGroup">
+
+          <p:commandButton id="gconfirm" value="Yes" update=":form:groupList, :messages" oncomplete="confirmDeleteGroup.hide()"
+                actionListener="#{groupList.deleteGroup}" />
+          <p:commandButton id="gdecline" value="No" onclick="confirmDeleteGroup.hide()" type="button" />
+
+        </p:confirmDialog>
+        <p:dataTable
+          id="groupList"
+          var="group"
+          value="#{groupList.model}"
+          selection="#{groupList.selectedGroup}"
+          selectionMode="single"
+          rowKey="#{group.id}"
+          paginator="true"
+          rows="10">
+          <p:column
+            headerText="Domain"
+            filterBy="#{group.domain}"
+            filterOptions="#{groupList.availableDomains}"
+            filterMatchMode="exact"
+          >
+            <h:outputText value="#{group.domain}" />
+          </p:column>
+          <p:column
+            headerText="Name"
+            filterBy="#{group.name}"
+            filterMatchMode="contains"
+          >
+            <h:outputText value="#{group.name}" />
+          </p:column>
+        </p:dataTable>
+        <p:commandButton value="New group" onclick="newGroupDlg.show();"/>
+      </p:panel>
+    </h:form>
+
+    <p:dialog id="groupDlg" header="New group" widgetVar="newGroupDlg" modal="true" height="250">
+      <h:form id="formgroup">
+
+        <h:panelGrid columns="2" style="margin-bottom:10px">
+
+          <h:outputText for="gdomain" value="Domain" />
+          <p:selectOneMenu id="gdomain" value="#{group.domain}">
+            <f:selectItems value="#{groupList.domains}"/>
+          </p:selectOneMenu>
+          <h:outputLabel for="gname" value="name" />
+          <p:inputText id="gname" required="true" value="#{group.name}">
+            <f:validateLength minimum="2" />
+          </p:inputText>
+        </h:panelGrid>
+
+        <p:commandButton id="submitButtonGroup" value="Submit" actionListener="#{group.save}" update=":form:groupList, :messages" oncomplete="newGroupDlg.hide();"/>
+
+      </h:form>
+    </p:dialog>
+    <p:dialog id="groupUsersDlg" header="Users of group" widgetVar="jsgroupUsersDlg" modal="true" height="250">
+      <h:form id="formGroupUsersDlg">
+      <p:pickList
+        id="groupUsersDlg_pickList"
+        value="#{groupList.groupUsersDialog.model}"
+        var="u"
+        itemLabel="#{u.login} (#{u.name})"
+        itemValue="#{u}"
+        rendered="#{not empty groupList.selectedGroup}"
+        converter="userPickListConverter"
+      >
+      </p:pickList>
+      <p:commandButton id="groupUsersDlg_Submit" value="Submit" update=":messages" oncomplete="jsgroupUsersDlg.hide();"/>
+      </h:form>
+    </p:dialog>
+
+  </ui:define>
+
+
+</ui:composition>
