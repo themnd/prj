@@ -4,51 +4,54 @@
     <artifactId>phapp</artifactId>
     <groupId>it.snova</groupId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>dbschema</artifactId>
   <name>Database Tables</name>
   <dependencies>
-  
+
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-core</artifactId>
-      <version>(2.9, )</version>
+      <version>${datanucleus.version}</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-rdbms</artifactId>
-      <version>(2.9, )</version>
+      <version>${datanucleus.version}</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-api-jpa</artifactId>
-      <version>(2.9, )</version>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>[1.2, 1.3)</version>
+      <version>${datanucleus.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.jdo</groupId>
       <artifactId>jdo-api</artifactId>
-      <version>[3.0, )</version>
+      <version>${jdo.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.geronimo.specs</groupId>
       <artifactId>geronimo-jpa_2.0_spec</artifactId>
-      <version>1.1</version>
+      <version>${jpa.version}</version>
+    </dependency>
+    
+    <!-- Logging -->
+    
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
   </dependencies>
   
-    <build>
+  <build>
     <plugins>
       <plugin>
         <groupId>org.datanucleus</groupId>
         <artifactId>maven-datanucleus-plugin</artifactId>
-        <version>3.0.0-release</version>
+        <version>3.1.0-release</version>
         <configuration>
           <!-- <log4jConfiguration>${basedir}/log4j.properties</log4jConfiguration> -->
           <verbose>true</verbose>
@@ -62,6 +65,20 @@
             </goals>
           </execution>
         </executions>
+        <dependencies>
+        
+          <!--
+          without this dependency the plugin will
+          try to use a different core version which
+          does not exist and so it will fail.
+          -->
+          
+          <dependency>
+            <groupId>org.datanucleus</groupId>
+            <artifactId>datanucleus-core</artifactId>
+            <version>${datanucleus.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
@@ -71,18 +88,5 @@
       <url>http://www.datanucleus.org/downloads/maven2/</url>
     </pluginRepository>
   </pluginRepositories>
-  <repositories>
-    <repository>
-      <id>DN_M2_Repo</id>
-      <name>DataNucleus Repository</name>
-      <url>http://www.datanucleus.org/downloads/maven2</url>
-    </repository>
-    <repository> <!-- Required for transaction-api transitive dep -->
-      <id>Java_Net_LEGACY</id>
-      <name>Java.Net legacy</name>
-      <url>http://download.java.net/maven/1/</url>
-      <layout>legacy</layout>
-    </repository>
-  </repositories>
   
 </project>

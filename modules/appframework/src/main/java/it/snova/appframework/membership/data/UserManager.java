@@ -180,15 +180,38 @@ public class UserManager
     }
   }
 
-  public List<Domain> getDomains()
+  private List<Domain> getDomainsQuery(Domain master, boolean alldomains)
   {
     EntityManager em = context.createEntityManager();
     try {
-      TypedQuery<Domain> q = em.createQuery("SELECT d FROM Domain d", Domain.class);
+      String sql;
+      if (alldomains) {
+        sql = "SELECT d FROM Domain d";
+      } else {
+        sql = "SELECT d FROM Domain d where domain=:domain";
+      }
+      TypedQuery<Domain> q = em.createQuery(sql, Domain.class);
+      if (!alldomains) {
+        if (master != null) {
+          q.setParameter("domain", master);
+        } else {
+          q.setParameter("domain", null);
+        }
+      }
       return q.getResultList();
     } finally {
       em.close();
     }
+  }
+
+  public List<Domain> getDomains()
+  {
+    return getDomainsQuery(null, false);
+  }
+
+  public List<Domain> getSubDomains(Domain master)
+  {
+    return getDomainsQuery(master, false);
   }
 
   public void createDomain(Domain d)
@@ -226,7 +249,7 @@ public class UserManager
       em.close();
     }
   }
-  
+
   public Group getGroup(long id)
   {
     EntityManager em = context.createEntityManager();
@@ -236,7 +259,7 @@ public class UserManager
       return g;
     } finally {
       em.close();
-    }    
+    }
   }
 
   public List<Group> getGroups(Domain d)
@@ -279,7 +302,7 @@ public class UserManager
   {
     return getGroups(null);
   }
-  
+
   public Group findGroup(final Long id)
   {
     EntityManager em = context.createEntityManager();
@@ -311,7 +334,7 @@ public class UserManager
       em.close();
     }
   }
-  
+
   public void setGroupMembers(Group g, long[] userIds)
   {
     EntityManager em = context.createEntityManager();
@@ -320,7 +343,7 @@ public class UserManager
       tx.begin();
 
       Group group = em.find(Group.class, g.getId());
-      
+
       group.getMembers().clear();
       for (long id: userIds) {
         User u = em.find(User.class, id);
@@ -334,7 +357,7 @@ public class UserManager
         tx.rollback();
       }
       em.close();
-    }    
+    }
   }
 
   public void iterateGroups(Domain d, final DBIterator<Group> iterator)
