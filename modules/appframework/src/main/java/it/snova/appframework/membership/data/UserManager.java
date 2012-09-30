@@ -45,12 +45,25 @@ public class UserManager
   {
     EntityManager em = context.createEntityManager();
     try {
-      TypedQuery<User> q = em.createQuery("SELECT u FROM User u where login=:login", User.class).setParameter("login",
-          login);
+      TypedQuery<User> q = em.createQuery("SELECT u FROM User u where login=:login", User.class).setParameter("login", login);
       return q.getSingleResult();
     } catch (NoResultException e) {
       logger.fine("no user with login " + login);
       return null;
+    } finally {
+      em.close();
+    }
+  }
+
+  public User getUser(long id)
+  {
+    EntityManager em = context.createEntityManager();
+    try {
+      User u = em.find(User.class, id);
+      if (u != null) {
+        em.detach(u);
+      }
+      return u;
     } finally {
       em.close();
     }
@@ -107,10 +120,31 @@ public class UserManager
     return validateUser(getUser(name), pwd);
   }
 
-  public User resetPassword(User u)
+  public String resetPassword(User u)
   {
-    u.setPwd(new String(pgen.generatePassword()));
-    return u;
+    EntityManager em = context.createEntityManager();
+    EntityTransaction tx = em.getTransaction();
+    try {
+      tx.begin();
+
+      User user = em.find(User.class, u.getId());
+
+      final String newPwd = new String(pgen.generatePassword());
+
+      PasswordEncrypter e = new PasswordEncrypter();
+      char[] pwd = e.encrypt(newPwd.toCharArray());
+      user.setPwd(new String(pwd));
+      em.persist(user);
+
+      tx.commit();
+
+      return newPwd;
+    } finally {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      em.close();
+    }
   }
 
   public void createUser(User u)
@@ -142,7 +176,9 @@ public class UserManager
       tx.begin();
 
       User user = em.find(User.class, u.getId());
-      em.remove(user);
+      if (user != null) {
+        em.remove(user);
+      }
 
       tx.commit();
     } finally {
@@ -255,7 +291,9 @@ public class UserManager
     EntityManager em = context.createEntityManager();
     try {
       Group g = em.find(Group.class, id);
-      em.detach(g);
+      if (g != null) {
+        em.detach(g);
+      }
       return g;
     } finally {
       em.close();
