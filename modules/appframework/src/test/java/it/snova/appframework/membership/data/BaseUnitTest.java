@@ -14,7 +14,7 @@ public abstract class BaseUnitTest extends TestCase
     super.setUp();
 
     ConnectorOptions options = new ConnectorOptions()
-    .dbname("app")
+    .dbname("test")
     .username("root")
     .password("root");
 
