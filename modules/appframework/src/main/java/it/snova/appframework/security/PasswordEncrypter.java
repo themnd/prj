@@ -27,7 +27,7 @@ public class PasswordEncrypter
       byte[] pwd = null;
       for (int count = ITERATIONS; count > 0; count--) {
         if (pwd == null) {
-          pwd = messageDigest.digest();          
+          pwd = messageDigest.digest();
         } else {
           pwd = messageDigest.digest(pwd);
         }
@@ -57,7 +57,7 @@ public class PasswordEncrypter
       byte[] pwd = null;
       for (int count = ITERATIONS; count > 0; count--) {
         if (pwd == null) {
-          pwd = messageDigest.digest();          
+          pwd = messageDigest.digest();
         } else {
           pwd = messageDigest.digest(pwd);
         }
@@ -72,7 +72,7 @@ public class PasswordEncrypter
   
   public boolean verifyPassword(String encPasswd, String pwd)
   {
-    if (encPasswd.length() > 12) {
+    if ((encPasswd.length() > 12) && (pwd != null)) {
       StringBuffer salt = new StringBuffer(encPasswd.substring(0, 12)).reverse();
       String origPwd = encPasswd.substring(12);
       String encNewPwd = new String(decrypt(salt.toString().toCharArray(), pwd.toCharArray()));
