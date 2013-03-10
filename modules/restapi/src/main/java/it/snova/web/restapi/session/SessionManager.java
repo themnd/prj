@@ -1,4 +1,4 @@
-package it.snova.web.restapi.sessions;
+package it.snova.web.restapi.session;
 
 import java.util.UUID;
 
@@ -11,21 +11,24 @@ import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 public class SessionManager implements ISessionManager
 {
   private final Ehcache cache;
-
+  
+  private final int MAX_SESSIONS = 100;
+  private final int SESSION_TIMEOUT_SECONDS = 10 * 60;
+  
   public SessionManager()
   {
-    CacheConfiguration cacheConfiguration = new CacheConfiguration("sessions", 100)
+    CacheConfiguration cacheConfiguration = new CacheConfiguration("sessions", MAX_SESSIONS)
     .memoryStoreEvictionPolicy(MemoryStoreEvictionPolicy.LFU)
     .eternal(false)
-    .timeToLiveSeconds(100)
+    .timeToLiveSeconds(SESSION_TIMEOUT_SECONDS)
     .timeToIdleSeconds(0);
-
+    
     CacheManager mgr = CacheManager.getInstance();
     final net.sf.ehcache.Cache cache = new net.sf.ehcache.Cache(cacheConfiguration);
     mgr.addCache(cache);
     this.cache = cache;
   }
-
+  
   @Override
   public String createSession(final Object obj)
   {
@@ -33,7 +36,7 @@ public class SessionManager implements ISessionManager
     cache.put(new Element(sessionId, obj));
     return sessionId;
   }
-
+  
   @Override
   public Object getSession(final String sessionId)
   {
@@ -43,5 +46,16 @@ public class SessionManager implements ISessionManager
     }
     return null;
   }
-
+  
+  @Override
+  public boolean removeSession(final String sessionId)
+  {
+    Element element = cache.get(sessionId);
+    if (element != null) {
+      cache.remove(sessionId);
+      return true;
+    }
+    return false;
+  }
+  
 }

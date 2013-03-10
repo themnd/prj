@@ -2,8 +2,8 @@ package it.snova.web.restapi.servlet.config;
 
 import it.snova.appframework.context.ConnectorOptions;
 import it.snova.appframework.context.Context;
-import it.snova.web.restapi.sessions.ISessionManager;
-import it.snova.web.restapi.sessions.SessionManager;
+import it.snova.web.restapi.session.ISessionManager;
+import it.snova.web.restapi.session.SessionManager;
 
 import java.util.logging.Logger;
 
