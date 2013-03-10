@@ -2,6 +2,7 @@ package it.snova.web.restapi.services.api.v1;
 
 import it.snova.appframework.membership.data.UserManager;
 import it.snova.dbschema.table.User;
+import it.snova.web.restapi.services.api.v1.data.UserData;
 import it.snova.web.restapi.session.ISessionManager;
 
 import java.util.logging.Level;
@@ -33,7 +34,7 @@ public class LoginService
   @Path("/authenticate")
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response authenticate(
       @FormParam("username") final String username,
       @FormParam("password") final String password)
@@ -46,7 +47,11 @@ public class LoginService
         return noCache(Response.status(403));
       }
       final String sessionId = sessionManager.createSession(u);
-      return noCache(Response.ok(sessionId));
+      UserData ud = new UserData();
+      ud.sessionId = sessionId;
+      ud.id = u.getId();
+      ud.name = u.getName();
+      return noCache(Response.ok(ud));
     } catch (Exception e) {
       logger.log(Level.SEVERE, e.getMessage(), e);
       return noCache(Response.serverError());

@@ -1,3 +1,5 @@
+$.cookie.json = true;
+
 /* Backbone objects which require global scope. */
 var broker = _.clone(Backbone.Events);
 var router = Backbone.Router.extend({

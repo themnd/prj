@@ -23,10 +23,7 @@ LoginModel = Backbone.Model.extend({
   },
   
   checkLogin: function() {
-    var c = this.apiModel.get_cookie();
-    if (c) {
-      var sid = c.sid;
-      this.apiModel.set_sessionid(sid);
+    if (this.apiModel.init_from_cookie()) {
       this.srv_loggedin();
     } else {
       this.broker.trigger('logged-out');
@@ -38,9 +35,8 @@ LoginModel = Backbone.Model.extend({
   },
   
   do_logout: function() {
-    var c = this.apiModel.get_cookie();
-    if (c && c.sid) {
-      this.srv_logout(c.sid);
+    if (this.apiModel.haveSession()) {
+      this.srv_logout();
     } else {
       this.broker.trigger('logged-out');
     }
@@ -89,12 +85,7 @@ LoginModel = Backbone.Model.extend({
         'password' : pwd
       },
       function(data) {
-        self.apiModel.set_cookie({
-          'sid': data,
-          'name': name
-        });
-        self.apiModel.set_sessionid(data);
-        
+        self.apiModel.init_from_data(data);
         self.broker.trigger('srv-logged-in', data);
       },
       function(e) {
@@ -103,7 +94,7 @@ LoginModel = Backbone.Model.extend({
     );
   },
   
-  srv_logout: function(sid) {
+  srv_logout: function() {
     
     var self = this;
     
@@ -111,7 +102,7 @@ LoginModel = Backbone.Model.extend({
       'logout',
       null,
       function(data) {
-        self.apiModel.del_cookie();        
+        self.apiModel.remove_session_data();        
         self.broker.trigger('srv-logged-out', data);
       },
       function(e) {
