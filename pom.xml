@@ -12,8 +12,17 @@
     <log4j.version>1.2.16</log4j.version>
     <datanucleus.version>3.1.1</datanucleus.version>
     <jdo.version>3.0</jdo.version>
-    <junit.version>4.8.1</junit.version>
+    <junit.version>4.10</junit.version>
     <primefaces.version>3.3.1</primefaces.version>
+    <metrics.version>2.1.2</metrics.version>
+    <commons-lang.version>2.1</commons-lang.version>
+    <commons-io.version>1.4</commons-io.version>
+    <ehcache-core.version>2.6.5</ehcache-core.version>
+    <google-guice.version>3.0</google-guice.version>
+    <jersey.version>1.15</jersey.version>
+    <httpclient.version>4.1.3</httpclient.version>
+    <slf4j.version>1.6.0</slf4j.version>
+    <jetty.version>8.1.9.v20130131</jetty.version>
   </properties>
 
   <build>
@@ -34,6 +43,7 @@
     <module>modules/appframework</module>
     <module>modules/dbschema</module>
     <module>modules/appinstall</module>
+    <module>modules/restapi</module>
     <module>modules/webgui</module>
     <module>modules/testjpa</module>
   </modules>
@@ -49,12 +59,20 @@
       <name>Maven Repository</name>
       <url>http://repo.maven.apache.org/maven2</url>
     </repository>
-    <repository> <!-- Required for transaction-api transitive dep -->
+    <repository>
+      <id>central</id>
+      <name>Central Maven repository</name>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+     <!-- Required for transaction-api transitive dep -->
+    <!-- 
+    <repository>
       <id>Java_Net_LEGACY</id>
       <name>Java.Net legacy</name>
       <url>http://download.java.net/maven/1/</url>
       <layout>legacy</layout>
-    </repository>
+    </repository
+     -->
   </repositories>
 
 </project>
